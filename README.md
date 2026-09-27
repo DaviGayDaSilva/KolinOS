@@ -49,7 +49,8 @@ Resultado em `output/`:
 |---|---|
 | `kolinos-1.0.0-corvo-arm64.tar.xz` | root filesystem KolinOS (arm64) |
 | `kolinos-1.0.0-corvo-arm64.iso` | ISO **carrier** (rootfs + código-fonte) — **não inicializável** |
-| `SHA256SUMS`, `METADATA.txt` | checksums e metadados do build |
+| `kolinos-source-1.0.0-corvo.zip` | código-fonte completo do projeto |
+| `SHA256SUMS`, `SOURCE-SHA256SUMS`, `METADATA.txt` | checksums e metadados do build |
 
 Para usar no Termux, transfira o `.tar.xz` para o celular e rode
 `scripts/termux/install.sh`.
@@ -92,7 +93,7 @@ kolinos/
 ├── scripts/
 │   ├── termux/install.sh    # instala o rootfs no Termux (proot-distro v4/v5)
 │   ├── host/                # enter.sh, verify-rootfs.sh (host Linux)
-│   └── artifacts/make-iso.sh
+│   └── artifacts/           # make-iso.sh, make-source-zip.sh
 ├── docs/                    # documentação detalhada
 ├── rootfs/                  # rootfs em construção (gerado; não versionado)
 ├── output/                  # artefatos finais (gerado; não versionado)
