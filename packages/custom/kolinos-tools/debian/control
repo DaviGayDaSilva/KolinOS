@@ -8,5 +8,7 @@ Description: KolinOS command-line tools
  Small utilities shipped by the KolinOS distribution: kolinos-info (a
  neofetch-style system summary with the KolinOS branding), kolinos-version
  (name, version and codename), apt-kolinos (enable or disable the
- distribution's own APT repository) and kolinos-firstboot (the one-time
- setup that runs after the system is installed).
+ distribution's own APT repository), kolinos-firstboot (the one-time setup
+ that runs after the system is installed), and the graphical session helpers
+ kolinos-session, kolinos-terminal, kolinos-wallpaper and kolinos-launcher
+ (FASE 7).

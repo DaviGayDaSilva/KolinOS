@@ -1,0 +1,184 @@
+/* KolinOS "Corvo Glass" — GTK 3 theme (FASE 7)
+ * Install path: /usr/share/themes/CorvoGlass/gtk-3.0/gtk.css
+ *
+ * Design notes:
+ *  - Surfaces are dark and translucent (alpha in the background-color values);
+ *    picom blurs the wallpaper behind them, which is what produces the glass.
+ *  - Every panel/window gets a 1px translucent white stroke and rounded
+ *    corners; that light edge is the signature of the glassmorphism look.
+ *  - Text stays light (F5F3FF) on purpose: a blurred backdrop can turn any
+ *    "dark" surface light, so dark text would become unreadable. */
+
+@define-color void_color    #07060D;
+@define-color base_color    #0C0A16;
+@define-color surface_color #14102A;
+@define-color primary       #785AC8;
+@define-color primary_hi    #A88BFF;
+@define-color accent        #2DD4BF;
+@define-color text_color    #F5F3FF;
+@define-color muted         #A9A3C9;
+@define-color stroke        rgba(255,255,255,0.16);
+@define-color glass         rgba(20,16,42,0.78);
+@define-color glass_lite    rgba(255,255,255,0.06);
+@define-color glass_hover   rgba(255,255,255,0.10);
+
+* {
+  -GtkWidget-focus-line-width: 1;
+  -GtkWidget-focus-padding: 1;
+  outline-color: @primary_hi;
+  outline-style: dashed;
+  outline-offset: -2px;
+  outline-width: 1px;
+}
+
+window,
+.background {
+  background-color: @glass;
+  color: @text_color;
+}
+
+/* --- header / title bars -------------------------------------------------- */
+headerbar,
+.titlebar {
+  background-image: none;
+  background-color: rgba(12,10,22,0.85);
+  border-bottom: 1px solid @stroke;
+  padding: 6px 10px;
+  min-height: 34px;
+  box-shadow: none;
+}
+headerbar .title, .titlebar .title { font-weight: 600; color: @text_color; }
+headerbar .subtitle { color: @muted; }
+headerbar button, .titlebar button {
+  border-radius: 10px;
+  background-color: transparent;
+  border: 1px solid transparent;
+  color: @muted;
+  padding: 4px 8px;
+}
+headerbar button:hover, .titlebar button:hover {
+  background-color: @glass_hover;
+  border-color: @stroke;
+  color: @text_color;
+}
+
+/* --- buttons -------------------------------------------------------------- */
+button {
+  background-image: none;
+  background-color: @glass_lite;
+  border: 1px solid @stroke;
+  border-radius: 12px;
+  color: @text_color;
+  padding: 7px 14px;
+  min-height: 22px;
+  transition: background-color 140ms ease, border-color 140ms ease;
+}
+button:hover   { background-color: @glass_hover; border-color: rgba(255,255,255,0.28); }
+button:active,
+button:checked { background-color: @primary; border-color: @primary_hi; color: #FFFFFF; }
+button:disabled { color: rgba(169,163,201,0.5); border-color: rgba(255,255,255,0.06); }
+button.suggested-action {
+  background-image: linear-gradient(135deg, @primary_hi, @primary);
+  border-color: transparent; color: #FFFFFF;
+}
+button.destructive-action {
+  background-image: linear-gradient(135deg, #FB7185, #C7455F);
+  border-color: transparent; color: #FFFFFF;
+}
+
+/* --- entries & views ------------------------------------------------------ */
+entry, spinbutton, searchbar entry, .entry {
+  background-color: rgba(7,6,13,0.55);
+  border: 1px solid @stroke;
+  border-radius: 12px;
+  color: @text_color;
+  padding: 7px 12px;
+  caret-color: @accent;
+  transition: border-color 140ms ease;
+}
+entry:focus, spinbutton:focus, .entry:focus { border-color: @primary_hi; }
+entry:disabled { color: rgba(169,163,201,0.5); }
+entry selection { background-color: @primary; color: #FFFFFF; }
+
+textview, textview text, .view, list, iconview,
+treeview.view, .sidebar, .content-view {
+  background-color: rgba(12,10,22,0.55);
+  color: @text_color;
+}
+.view:selected, iconview:selected, treeview.view:selected, list row:selected {
+  background-color: @primary;
+  color: #FFFFFF;
+}
+list row:hover, .view:hover { background-color: @glass_lite; }
+
+/* --- sidebars / stacks ---------------------------------------------------- */
+stacksidebar.sidebar, .sidebar {
+  background-color: rgba(7,6,13,0.5);
+  border-right: 1px solid @stroke;
+}
+stacksidebar row { padding: 8px 10px; border-radius: 10px; margin: 2px 6px; }
+stacksidebar row:selected { background-color: @glass_hover; color: @text_color; }
+
+/* --- menus / popovers / tooltips ----------------------------------------- */
+menu, .menu, .popover, popover {
+  background-color: rgba(20,16,42,0.92);
+  border: 1px solid @stroke;
+  border-radius: 14px;
+  padding: 6px;
+  color: @text_color;
+}
+menuitem { border-radius: 10px; padding: 7px 10px; }
+menuitem:hover { background-color: @primary; color: #FFFFFF; }
+tooltip, tooltip.background {
+  background-color: rgba(20,16,42,0.95);
+  border: 1px solid @stroke;
+  border-radius: 10px;
+  color: @text_color;
+}
+
+/* --- scrollbars ----------------------------------------------------------- */
+scrollbar { background-color: transparent; border: none; }
+scrollbar slider {
+  background-color: rgba(255,255,255,0.18);
+  border-radius: 999px;
+  min-width: 8px; min-height: 8px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+scrollbar slider:hover { background-color: @primary_hi; }
+
+/* --- switches, checkboxes, radios, progress ------------------------------- */
+switch {
+  background-color: rgba(0,0,0,0.45);
+  border: 1px solid @stroke;
+  border-radius: 999px;
+}
+switch:checked { background-color: @primary; }
+switch slider { background-color: #F5F3FF; border-radius: 999px; border: none; }
+
+checkbutton check, radiobutton radio {
+  background-color: rgba(7,6,13,0.6);
+  border: 1px solid @stroke;
+  border-radius: 6px;
+  min-width: 16px; min-height: 16px;
+}
+radiobutton radio { border-radius: 999px; }
+checkbutton check:checked, radiobutton radio:checked { background-color: @primary; border-color: @primary_hi; color: #FFFFFF; }
+
+progressbar trough { background-color: rgba(255,255,255,0.08); border-radius: 999px; min-height: 8px; }
+progressbar progress { background-image: linear-gradient(90deg, @primary_hi, @accent); border-radius: 999px; min-height: 8px; }
+
+/* --- tabs ----------------------------------------------------------------- */
+notebook > header { background-color: transparent; border-color: @stroke; }
+notebook > header tab {
+  background-color: transparent; border: 1px solid transparent;
+  border-radius: 12px; padding: 6px 12px; color: @muted;
+}
+notebook > header tab:checked { background-color: @glass_lite; border-color: @stroke; color: @text_color; }
+
+/* --- misc ----------------------------------------------------------------- */
+separator { background-color: @stroke; min-width: 1px; min-height: 1px; }
+frame > border, .frame { border: 1px solid @stroke; border-radius: 14px; }
+.suggested-action label, .destructive-action label { color: #FFFFFF; }
+link, *:link { color: @accent; }
+*:link:visited { color: @primary_hi; }

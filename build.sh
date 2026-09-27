@@ -22,6 +22,10 @@
 #   --with-custom-debs Build KolinOS's own .deb packages and install them via
 #                      APT (stage 35). On by default.
 #   --no-custom-debs   Skip them, keeping only Debian packages.
+#   --with-desktop     Also install the Corvo Glass graphical session
+#                      (kolinos-desktop, stage 35 + graphics stage 65). Off by
+#                      default: it pulls in X11 from the Debian mirror and adds
+#                      weight, so the base image stays lean.
 #   --force            Recreate an existing rootfs from scratch
 #   --keep-qemu        Keep the qemu-user-static binary inside the rootfs
 #   --slim / --full    Slim mode (default): drop docs, man pages and non-C
@@ -42,6 +46,7 @@ KOLIN_NO_ISO=0
 KOLIN_SLIM=1
 KOLIN_ONLY_STAGES=""
 KOLIN_CUSTOM_DEBS=1
+KOLIN_DESKTOP=0
 KOLIN_OUTPUT_DIR="$KOLIN_ROOT_DIR/output"
 KOLIN_ROOTFS="$KOLIN_ROOT_DIR/rootfs"
 # Reproducibility overrides (empty = use VERSION).
@@ -67,6 +72,7 @@ while [ $# -gt 0 ]; do
         --only)           KOLIN_ONLY_STAGES="$2"; shift 2 ;;
         --with-custom-debs) KOLIN_CUSTOM_DEBS=1; shift ;;
         --no-custom-debs)   KOLIN_CUSTOM_DEBS=0; shift ;;
+        --with-desktop)   KOLIN_DESKTOP=1; shift ;;
         --force)          KOLIN_FORCE=1; shift ;;
         --keep-qemu)      KOLIN_KEEP_QEMU=1; shift ;;
         --slim)           KOLIN_SLIM=1; shift ;;
@@ -93,6 +99,7 @@ export KOLIN_ARCH DEB_ARCH
 export KOLIN_DEB_ARCH="$DEB_ARCH"
 export KOLIN_FORCE KOLIN_KEEP_QEMU KOLIN_INCLUDE_SOURCE KOLIN_NO_ISO KOLIN_SLIM
 export KOLIN_CUSTOM_DEBS
+export KOLIN_DESKTOP
 export KOLIN_ROOTFS KOLIN_OUTPUT_DIR
 export KOLIN_CODENAME_LOWER
 export KOLIN_SNAPSHOT KOLIN_SNAPSHOT_HOST
@@ -121,6 +128,11 @@ fi
 mapfile -t STAGES < <(find "$SELF_DIR/build/stages" -maxdepth 1 -name '[0-9][0-9]-*.sh' | sort)
 [ "${#STAGES[@]}" -gt 0 ] || die "nenhum estágio encontrado em build/stages/"
 
+# Stage 80 writes METADATA.txt and SHA256SUMS for every artifact, so it must run
+# *after* the ISO is generated (otherwise the checksum list would describe a
+# stale ISO left over from a previous build). Defer it and run it last.
+STAGE_METADATA=""
+
 start_ts=$SECONDS
 for stage in "${STAGES[@]}"; do
     name="$(basename "$stage")"
@@ -131,16 +143,19 @@ for stage in "${STAGES[@]}"; do
             *) log "pulando $name (--only)"; continue ;;
         esac
     fi
+    # Stage 35 builds KolinOS's own .deb packages; skip it when asked.
+    if [ "$num" = 35 ] && [ "$KOLIN_CUSTOM_DEBS" != 1 ]; then
+        log "pulando $name (--no-custom-debs)"
+        continue
+    fi
+    if [ "$num" = 80 ]; then
+        STAGE_METADATA="$stage"
+        continue
+    fi
     step "$name"
     # shellcheck disable=SC1090
     source "$stage"
     declare -f stage_main >/dev/null || die "stage $name não define stage_main()"
-    # Stage 35 builds KolinOS's own .deb packages; skip it when asked.
-    if [ "$num" = 35 ] && [ "$KOLIN_CUSTOM_DEBS" != 1 ]; then
-        log "pulando $name (--no-custom-debs)"
-        unset -f stage_main
-        continue
-    fi
     stage_main
     unset -f stage_main
 done
@@ -158,6 +173,15 @@ if [ "$KOLIN_NO_ISO" != 1 ]; then
     else
         warn "geração da ISO falhou (o rootfs continua válido)"
     fi
+fi
+
+# Metadata last, so METADATA.txt and SHA256SUMS describe the final artifact set.
+if [ -n "$STAGE_METADATA" ]; then
+    step "$(basename "$STAGE_METADATA")"
+    # shellcheck disable=SC1090
+    source "$STAGE_METADATA"
+    stage_main
+    unset -f stage_main
 fi
 
 log "artefatos em: $KOLIN_OUTPUT_DIR"

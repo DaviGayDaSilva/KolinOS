@@ -11,12 +11,13 @@ desenvolvimento, execução dentro do **Termux** usando `proot` (sem root).
 - **Arquitetura principal:** arm64 / aarch64
 - **Gerenciador de pacotes:** APT/DPKG (é Debian por dentro)
 
-> Estado atual: **Fases 1, 2, 3, 4, 5 e 6** concluídas. Veja [`docs/PHASES.md`](docs/PHASES.md)
+> Estado atual: **Fases 1 a 7** concluídas. Veja [`docs/PHASES.md`](docs/PHASES.md)
 > para o roadmap, [`docs/PHASE2.md`](docs/PHASE2.md) (base mínima),
 > [`docs/PHASE3.md`](docs/PHASE3.md) (identidade visual),
 > [`docs/PHASE4.md`](docs/PHASE4.md) (build reproduzível),
 > [`docs/PHASE5.md`](docs/PHASE5.md) (pacotes próprios `.deb`),
-> [`docs/PHASE6.md`](docs/PHASE6.md) (sistema de instalação), além de
+> [`docs/PHASE6.md`](docs/PHASE6.md) (sistema de instalação),
+> [`docs/PHASE7.md`](docs/PHASE7.md) (interface gráfica "Corvo Glass"), além de
 > [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md) para o que funciona (e o que não
 > funciona) em Termux/proot/root.
 
@@ -62,6 +63,7 @@ Flags úteis do `build.sh`:
 | `--include-source` | embute o código-fonte no rootfs |
 | `--snapshot STAMP` | fixa as versões Debian no `snapshot.debian.org` |
 | `--reproducible` | build bit-a-bit reprodutível (usa a data de `VERSION`) |
+| `--with-desktop` | instala também o desktop "Corvo Glass" (Fase 7) |
 | `--no-custom-debs` | não constrói/instala os pacotes KolinOS (Fase 5) |
 
 Resultado em `output/`:

@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Terminal
+Name[pt_BR]=Terminal
+Comment=KolinOS glass terminal
+Exec=/usr/bin/kolinos-terminal
+TryExec=/usr/bin/kolinos-terminal
+Icon=utilities-terminal
+Terminal=false
+Categories=System;TerminalEmulator;
+Keywords=shell;prompt;command;terminal;
+StartupNotify=true

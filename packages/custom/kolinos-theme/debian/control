@@ -1,0 +1,14 @@
+Package: kolinos-theme
+Architecture: @KOLIN_DEB_ARCH@
+Maintainer: KolinOS <dev@kolinos.org>
+Section: x11
+Priority: optional
+Depends: bash
+Recommends: picom, openbox, tint2, xterm
+Description: KolinOS "Corvo Glass" themes
+ The Corvo Glass visual identity as installed files: the GTK 2/3 themes
+ (/usr/share/themes/CorvoGlass), the openbox theme, the tint2 panel, the rofi
+ launcher theme, the terminal colour scheme and the desktop configuration
+ under /etc/xdg/kolinos. The wallpapers and logo are shipped by
+ kolinos-branding; the compositor (picom) that turns the translucent surfaces
+ into real frosted glass is provided by kolinos-desktop.

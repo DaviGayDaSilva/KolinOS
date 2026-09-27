@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=X-GNOME-Metatheme
+Name=CorvoGlass
+Comment=KolinOS Corvo Glass — translucido, escuro, vidro sobre fundo espacial
+Encoding=UTF-8
+
+[X-GNOME-Metatheme]
+GtkTheme=CorvoGlass
+MetacityTheme=CorvoGlass
+IconTheme=hicolor
+CursorTheme=Adwaita
+ButtonLayout=:minimize,maximize,close

@@ -1,0 +1,34 @@
+# KolinOS "Corvo Glass" — paleta da interface gráfica (FASE 7)
+#
+# Estética: glassmorphism sobre fundo espacial escuro. Superfícies são
+# translúcidas, com blur aplicado pelo compositor (picom); contornos claros
+# de 1px e sombras difusas dão a sensação de vidro.
+#
+# Regra de contraste: texto claro (#F5F3FF) sobre superfícies escuras; nunca
+# texto escuro sobre vidro claro, porque o blur muda o fundo por baixo.
+#
+#   nome        hex        uso
+#   ----------- ---------  ------------------------------------------------
+#   VOID        #07060D    fundo mais profundo (atrás de tudo)
+#   BASE        #0C0A16    fundo base de janelas/terminal
+#   SURFACE     #14102A    superfície elevada (painéis, cartões)
+#   GLASS       #FFFFFF0F  vidro sobre superfície (alpha ~6%)
+#   GLASS_STRONG#FFFFFF1A  vidro mais opaco para foco/hover (alpha ~10%)
+#   STROKE      #FFFFFF26  contorno de vidro (alpha ~15%)
+#   PRIMARY     #785AC8    roxo/índigo — cor da marca
+#   PRIMARY_HI  #A88BFF    roxo claro — foco, seleção
+#   ACCENT      #2DD4BF    ciano — destaques, indicadores ativos
+#   TEXT        #F5F3FF    texto principal
+#   MUTED       #A9A3C9    texto secundário
+#   OK          #4ADE80    sucesso
+#   WARN        #FBBF24    aviso
+#   ERR         #FB7185    erro
+#
+# Estas cores são consumidas por:
+#   - openbox  (config/desktop/openbox/themes/CorvoGlass/openbox-3/themerc)
+#   - picom    (config/desktop/picom/picom.conf)
+#   - tint2    (config/desktop/tint2/tint2rc)
+#   - GTK 2/3  (config/desktop/gtk-2.0/gtkrc, config/desktop/gtk-3.0/gtk.css)
+#   - rofi     (config/desktop/rofi/kolinos.rasi)
+#   - wallpapers (config/branding/wallpaper-*.svg)
+# Mantenha em sincronia com VERSION (KOLIN_GLASS_*).

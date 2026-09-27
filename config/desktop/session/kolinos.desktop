@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=KolinOS
+Comment=KolinOS Corvo Glass session (openbox + picom + tint2)
+Exec=/usr/bin/kolinos-session
+TryExec=/usr/bin/kolinos-session
+Icon=kolinos
+DesktopNames=KolinOS

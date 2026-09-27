@@ -4,7 +4,10 @@ Maintainer: KolinOS <dev@kolinos.org>
 Section: metapackages
 Priority: optional
 Depends: kolinos-tools, kolinos-branding, sudo, ca-certificates, bash-completion
+Suggests: kolinos-desktop, kolinos-theme
 Description: KolinOS base metapackage
  Marks a system as KolinOS and pulls the components that make it one: the
  KolinOS tools, the visual identity and the small set of Debian packages the
- distribution expects to be present.
+ distribution expects to be present. The graphical session (kolinos-desktop)
+ is only a Suggests: a headless phone/container install stays lean, and the
+ desktop is added explicitly with `apt install kolinos-desktop`.

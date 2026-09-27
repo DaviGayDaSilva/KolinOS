@@ -78,8 +78,47 @@ devem ir para background com log em arquivo e ser acompanhados por `tail`.
 O registro no `binfmt_misc` é volátil: um resume do sandbox perde-o; reexecute
 o registro antes de qualquer build/chroot arm64.
 
-## Push para o GitHub
+## Testar o tema gráfico (FASE 7)
 
+O tema "Corvo Glass" pode ser validado **sem build e sem root**, no próprio
+sandbox, com um servidor X virtual:
+
+```sh
+sudo apt-get install -y xvfb openbox picom tint2 xterm feh imagemagick \
+    fonts-inter fonts-jetbrains-mono gtk-3-examples rofi xdotool x11-utils
+bash scripts/host/preview-theme.sh output/desktop/preview-desktop.png
+KOLIN_PREVIEW_GEOM=540x1200 bash scripts/host/preview-theme.sh output/desktop/preview-mobile.png
+bash scripts/host/verify-desktop.sh            # checagens nativas dos .deb/configs
+```
+
+`preview-theme.sh` sobe Xvfb + openbox + picom + tint2 num prefixo temporário,
+aplica o wallpaper e salva um screenshot real (com blur). Confira em
+`/tmp/kolinos-preview-tint2.log` que não há `invalid option` — o tint2
+**descarta opções inválidas em silêncio**, então o log é o teste.
+
+Armadilhas do tema (detalhe em `docs/PHASE7.md` §4): tint2 não tem
+`background_id`, `panel_shadow*` nem `clock_font`; picom não deve excluir
+`class_g = 'tint2'` do blur; `_GTK_FRAME_EXTENTS@:c` está depreciado.
+
+## Conflito de arquivos com pacotes Debian
+
+Nunca coloque num `.deb` da KolinOS um caminho que um pacote Debian já possui:
+o dpkg aborta com *trying to overwrite ... which is also in package kolinos-X*.
+Casos conhecidos: `xinit` é dono de `/etc/X11/xinit/xinitrc`; `openbox` é dono
+de `/etc/xdg/openbox/{rc,menu}.xml`. Por isso o openbox da KolinOS vive em
+`/etc/xdg/kolinos/openbox/` (carregado com `openbox --config-file`) e o
+`xinitrc` é só exemplo (`config/desktop/session/xinitrc.sample`).
+Ao mudar caminhos de um pacote, **purge as versões antigas do rootfs** antes de
+reinstalar — o apt não substitui o conteúdo de um pacote de mesma versão.
+
+## Ordem dos artefatos
+
+O estágio 80 escreve `METADATA.txt` e `SHA256SUMS`; ele roda **depois** da ISO
+(o `build.sh` o adia de propósito). Se o rodar antes, o `SHA256SUMS` descreve a
+ISO antiga. O `make-iso.sh` atualiza a linha da ISO no `SHA256SUMS` pela última
+coluna do arquivo (as linhas do tar podem ter prefixo `./`).
+
+## Push para o GitHub
 O `GITHUB_TOKEN` do sandbox é um token de integração **somente-leitura** para
 este repositório (`Resource not accessible by integration` no git push). Para
 publicar, use um PAT com permissão de escrita. Depois do push, remova o token

@@ -1,0 +1,13 @@
+#!/bin/sh
+# KolinOS "Corvo Glass" — optional xinitrc (FASE 7)
+# NOT installed automatically. Copy it to ~/.xinitrc, or append this line to
+# /etc/X11/xinit/xinitrc, when you want a bare `startx` to enter the session.
+# (KolinOS does not own /etc/X11/xinit/xinitrc: the Debian `xinit` package does.)
+
+if [ -x /usr/bin/kolinos-session ]; then
+    exec /usr/bin/kolinos-session
+fi
+
+# Fallback so a machine without kolinos-desktop still gets a usable X session.
+xrdb -merge /etc/xdg/kolinos/Xresources 2>/dev/null || true
+exec xterm -ls

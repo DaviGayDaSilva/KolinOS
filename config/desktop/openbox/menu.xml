@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- KolinOS "Corvo Glass" — openbox root menu (FASE 7)
+     Install path: /etc/xdg/kolinos/openbox/menu.xml
+     (found automatically because it sits next to the rc.xml passed to
+     openbox --config-file.) -->
+<openbox_menu xmlns="http://openbox.org/3.4/menu">
+  <menu id="root-menu" label="KolinOS">
+    <item label="Terminal">
+      <action name="Execute"><command>kolinos-terminal</command></action>
+    </item>
+    <item label="Aplicativos">
+      <action name="Execute"><command>kolinos-launcher</command></action>
+    </item>
+    <item label="Arquivos">
+      <action name="Execute"><command>pcmanfm</command></action>
+    </item>
+    <separator/>
+    <item label="Trocar wallpaper">
+      <action name="Execute"><command>kolinos-wallpaper</command></action>
+    </item>
+    <item label="Informacoes do sistema">
+      <action name="Execute"><command>kolinos-terminal -e kolinos-info</command></action>
+    </item>
+    <menu id="themes" label="Aparencia">
+      <item label="Corvo Glass (padrao)">
+        <action name="Execute"><command>kolinos-session --help</command></action>
+      </item>
+    </menu>
+    <separator/>
+    <menu id="workspaces" label="Areas de trabalho">
+      <item label="principal">
+        <action name="GoToDesktop"><to>1</to></action>
+      </item>
+      <item label="midia">
+        <action name="GoToDesktop"><to>2</to></action>
+      </item>
+    </menu>
+    <separator/>
+    <item label="Sair da sessao">
+      <action name="Exit"/>
+    </item>
+    <item label="Desligar">
+      <action name="Execute"><command>systemctl poweroff</command></action>
+    </item>
+  </menu>
+</openbox_menu>

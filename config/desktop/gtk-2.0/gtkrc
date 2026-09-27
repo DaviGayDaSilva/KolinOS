@@ -1,0 +1,64 @@
+# KolinOS "Corvo Glass" — GTK 2 theme (FASE 7)
+# Install path: /usr/share/themes/CorvoGlass/gtk-2.0/gtkrc
+# GTK 2 has no CSS; this file mirrors the GTK 3 look for older apps. Rounded
+# corners and blur are not possible here, so it stays flat and dark with the
+# brand colours, and relies on the murrine engine for the subtle gradients.
+
+gtk-color-scheme = "bg_color:#0C0A16\nbase_color:#14102A\ntext_color:#F5F3FF\nfg_color:#F5F3FF\nselected_bg_color:#785AC8\nselected_fg_color:#FFFFFF\ntooltip_bg_color:#14102A\ntooltip_fg_color:#F5F3FF\nlink_color:#2DD4BF"
+
+style "kolinos-default" {
+    xthickness = 1
+    ythickness = 1
+
+    fg[NORMAL]        = @fg_color
+    fg[PRELIGHT]      = @fg_color
+    fg[SELECTED]      = @selected_fg_color
+    fg[ACTIVE]        = @fg_color
+    fg[INSENSITIVE]   = shade(0.5, @fg_color)
+
+    bg[NORMAL]        = @bg_color
+    bg[PRELIGHT]      = shade(1.18, @bg_color)
+    bg[SELECTED]      = @selected_bg_color
+    bg[ACTIVE]        = shade(0.85, @bg_color)
+    bg[INSENSITIVE]   = @bg_color
+
+    base[NORMAL]      = @base_color
+    base[PRELIGHT]    = shade(1.1, @base_color)
+    base[SELECTED]    = @selected_bg_color
+    base[ACTIVE]      = @selected_bg_color
+    base[INSENSITIVE] = @bg_color
+
+    text[NORMAL]      = @text_color
+    text[PRELIGHT]    = @text_color
+    text[SELECTED]    = @selected_fg_color
+    text[ACTIVE]      = @selected_fg_color
+
+    engine "murrine" {
+        roundness     = 8
+        gradient_shades = {1.10, 1.05, 1.0, 0.94}
+        lightborder_shade = 1.25
+        glowstyle     = 3
+        glow_shade    = 1.08
+        reliefstyle   = 1
+        menubarstyle  = 2
+        scrollbarstyle = 2
+        animation     = FALSE
+    }
+}
+
+style "kolinos-wide" {
+    xthickness = 2
+    ythickness = 2
+    engine "murrine" { roundness = 8 }
+}
+
+class "GtkWidget"         style "kolinos-default"
+class "GtkButton"         style "kolinos-wide"
+class "GtkEntry"          style "kolinos-wide"
+class "GtkToolbar"        style "kolinos-default"
+class "GtkMenuBar"        style "kolinos-default"
+class "GtkMenuItem"       style "kolinos-default"
+class "GtkTreeView"       style "kolinos-default"
+class "GtkNotebook"       style "kolinos-default"
+widget_class "*<GtkNotebook>*<GtkEventBox>" style "kolinos-default"
+widget "gtk-tooltip*"     style "kolinos-default"

@@ -1,0 +1,58 @@
+! KolinOS "Corvo Glass" — X resources / xterm (FASE 7)
+! Loaded into the X session by the KolinOS session script, and into a plain
+! terminal with: xrdb -merge /etc/xdg/kolinos/Xresources
+!
+! Colours mirror the brand palette in VERSION. The terminal is kept at 94%
+! opacity so picom blurs the wallpaper behind it (the glass effect).
+
+! --- xterm ----------------------------------------------------------------
+XTerm*faceName: JetBrains Mono
+XTerm*faceSize: 11
+XTerm*termName: xterm-256color
+XTerm*utf8: 1
+XTerm*locale: true
+XTerm*saveLines: 2000
+XTerm*scrollBar: false
+XTerm*rightScrollBar: false
+XTerm*jumpScroll: true
+XTerm*multiScroll: true
+XTerm*fastScroll: true
+XTerm*allowBoldFonts: true
+XTerm*selectToClipboard: true
+XTerm*internalBorder: 10
+XTerm*highlightColor: #785AC8
+XTerm*highlightTextColor: #F5F3FF
+XTerm*cursorColor: #2DD4BF
+XTerm*pointerColor: #A88BFF
+XTerm*pointerColorBackground: #14102A
+
+! --- base colours ---------------------------------------------------------
+XTerm*background: #0C0A16
+XTerm*foreground: #F5F3FF
+
+! --- 16 ANSI colours ------------------------------------------------------
+XTerm*color0:  #0C0A16
+XTerm*color1:  #FB7185
+XTerm*color2:  #4ADE80
+XTerm*color3:  #FBBF24
+XTerm*color4:  #785AC8
+XTerm*color5:  #A88BFF
+XTerm*color6:  #2DD4BF
+XTerm*color7:  #D7D3EE
+XTerm*color8:  #4A4468
+XTerm*color9:  #FB7185
+XTerm*color10: #4ADE80
+XTerm*color11: #FBBF24
+XTerm*color12: #A88BFF
+XTerm*color13: #C4A9FF
+XTerm*color14: #5EEAD4
+XTerm*color15: #F5F3FF
+
+! --- urxvt (if installed) -------------------------------------------------
+URxvt.font: xft:JetBrains Mono:pixelsize=12
+URxvt.internalBorder: 14
+URxvt.background: [94]#0C0A16
+URxvt.foreground: #F5F3FF
+URxvt.cursorColor: #2DD4BF
+URxvt.urgentBell: true
+URxvt.scrollBar: false

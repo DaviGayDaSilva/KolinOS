@@ -162,19 +162,35 @@ Detalhes em [`docs/PHASE6.md`](PHASE6.md).
 
 ---
 
-## FASE 7 — Interface gráfica ⬜
+## FASE 7 — Interface gráfica: tema "Corvo Glass" ✅
 
-**Objetivo:** ambiente gráfico leve, adequado a celular.
+**Objetivo:** ambiente gráfico leve e bonito, adequado a celular, com identidade
+própria (glassmorphism). Detalhes em [`docs/PHASE7.md`](PHASE7.md).
 
-Planejado (nesta ordem, do mais leve ao mais completo):
+O que existe:
 
-1. Window manager leve (ex.: `openbox`) + terminal (ex.: `foot`/`xterm`).
-2. Gerenciador de login (`lightdm`) se necessário.
-3. Desktop leve (ex.: `xfce4`).
-4. Tema, ícones e wallpapers próprios.
+- Stack leve: `openbox` (WM) + `picom` (compositor, o que dá o vidro) +
+  `tint2` (painel) + `rofi` (launcher) + `xterm`/`foot` (terminal),
+  com `feh` para o wallpaper. Sem GNOME/KDE/XFCE.
+- Tema próprio "Corvo Glass": GTK 3 (`gtk.css`), GTK 2 (`gtkrc`), tema de
+  openbox, `picom.conf` (blur/glass), `kolinos.tint2rc`, `kolinos.rasi`,
+  `Xresources`/`foot.ini`. Paleta em `config/branding/glass-palette.txt`,
+  tokens em `VERSION` (`KOLIN_GLASS_*`).
+- Assets SVG (emblema, wallpapers mobile 1080×2400 e desktop 1920×1080),
+  renderizados por `scripts/artifacts/render-assets.sh` (`rsvg-convert`).
+- Pacotes `kolinos-desktop` (metapacote + greeter do lightdm) e
+  `kolinos-theme` (arquivos de tema). `kolinos-base` só os sugere.
+- Comandos `kolinos-session`, `kolinos-terminal`, `kolinos-wallpaper`,
+  `kolinos-launcher` (`kolinos-tools`).
+- Build opt-in: `sudo bash build.sh --with-desktop`; estágio `65-desktop.sh`
+  valida e aplica preferências por usuário.
+- Sem instalar o desktop: `apt-kolinos enable && sudo apt-get install kolinos-desktop`.
+- Testes: `scripts/host/preview-theme.sh` (captura o tema em Xvfb, com blur) e
+  `scripts/host/verify-desktop.sh` (checagens nativas dos `.deb`, configs e ausência de conflitos com pacotes Debian).
 
-> Importante: **não** instalar ambiente gráfico pesado na Fase 1–6. Rodar GUI
-> dentro do Termux exige `termux-x11`/VNC — isso é tratado nesta fase, não antes.
+Limitações (leia `docs/PHASE7.md` §2): GUI exige um **servidor X** — no Termux
+isso é Termux:X11 (`DISPLAY=:0 kolinos-session`); sem X não há janelas. Nada
+aqui depende de root; `lightdm` só faz sentido em hardware real.
 
 ---
 

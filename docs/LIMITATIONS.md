@@ -80,12 +80,41 @@ Sem bootloader desbloqueado, o máximo que se consegue é o uso via Termux/proot
 
 ---
 
-## 6. O que só pode ser feito em **hardware real** (Fase 10)
+## 6. Interface gráfica (Fase 7)
+
+Um ambiente gráfico precisa de um **servidor X**. Isso não está incluído no
+rootfs — é fornecido pelo ambiente.
+
+| Cenário | GUI funciona? | Como |
+|---|:--:|---|
+| Termux + proot | ✅ com ressalvas | app **Termux:X11** + pacote `termux-x11`; `DISPLAY=:0 kolinos-session` dentro do proot |
+| proot sem X | ❌ | não há display; use o sistema em modo texto |
+| Hardware real (kernel próprio) | ✅ | Xorg (`xserver-xorg`) ou `lightdm` |
+| VNC | ✅ | `tigervnc-standalone-server` no rootfs, cliente VNC no Android |
+
+O que muda no Termux/Android:
+
+- **Sem GPU real:** o `picom` cai para software rendering (`llvmpipe`). O blur
+  funciona, mas é mais pesado — há um perfil leve comentado em
+  `config/desktop/picom/picom.conf`. Em todo caso, o vidro pode ser desligado
+  sem quebrar nada (só perde o blur).
+- **Sem `lightdm`:** login gráfico não roda em contêiner/proot. Ele é
+  `Suggests`, apenas para hardware real. No Termux, inicie direto com
+  `kolinos-session`.
+- **Nada disso exige root.** Nem instalar o desktop, nem rodar a sessão dentro
+  do proot. Root no Android não é usado nem presumido.
+- **RAM:** com o desktop carregado, espere ~250–400 MB. Em aparelho com 2 GB ou
+  menos, prefira o `tint2` desligado ou o perfil leve do picom.
+
+---
+
+## 7. O que só pode ser feito em **hardware real** (Fase 10)
 
 - Kernel + device tree para o aparelho.
 - Interface gráfica nativa (sem termux-x11/VNC).
 - Instalador `.img` de disco.
 - Testes de bateria, aquecimento, drivers.
+- `lightdm` e login gráfico de verdade.
 
 ---
 
@@ -97,6 +126,8 @@ Sem bootloader desbloqueado, o máximo que se consegue é o uso via Termux/proot
 | APT/DPKG | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Instalar pacotes | ✅ | ✅ | ✅ | ✅ | ✅ |
 | GUI (via termux-x11/VNC) | ✅ | ✅ | — | nativo | nativo |
+| Blur/vidro do tema (picom) | ✅ lento | ✅ lento | ✅ | ✅ | ✅ |
+| `lightdm` (login gráfico) | ❌ | ❌ | ⚠️ | ✅ | ✅ |
 | `chroot` real | ❌ | ❌ | ✅ | ✅ | ✅ |
 | `mount`/`mknod` | ❌ | ❌ | ✅ | ✅ | ✅ |
 | systemd/init real | ❌ | ❌ | parcial | ✅ | ✅ |

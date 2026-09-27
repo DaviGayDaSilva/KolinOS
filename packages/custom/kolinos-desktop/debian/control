@@ -1,0 +1,20 @@
+Package: kolinos-desktop
+Architecture: @KOLIN_DEB_ARCH@
+Maintainer: KolinOS <dev@kolinos.org>
+Section: x11
+Priority: optional
+Depends: kolinos-theme, kolinos-tools,
+ openbox, picom, tint2, xterm, feh, rofi, xinit, x11-xserver-utils,
+ libgl1-mesa-dri, adwaita-icon-theme, fonts-inter, fonts-jetbrains-mono
+Recommends: pcmanfm, gtk2-engines-murrine
+Suggests: lightdm, lightdm-gtk-greeter
+Description: KolinOS "Corvo Glass" lightweight desktop
+ Metapackage that pulls in the KolinOS graphical session: the openbox window
+ manager, the picom compositor (which produces the frosted-glass look), the
+ tint2 panel, a terminal, the rofi launcher and the Corvo Glass theme.
+ .
+ It is deliberately light (X11, no full desktop environment) so it can run on
+ phones and other low-RAM ARM64 devices. Starting the session requires an X
+ server: on real hardware an Xorg server or lightdm; under Termux the
+ Termux:X11 app. This package installs the desktop, it does not provide a
+ display server on its own.

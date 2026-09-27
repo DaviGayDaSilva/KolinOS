@@ -1,0 +1,100 @@
+/* KolinOS "Corvo Glass" — rofi launcher theme (FASE 7)
+ * Usage: rofi -show drun -theme /etc/xdg/rofi/kolinos.rasi
+ * A frosted panel: rounded, translucent, one-pixel light stroke, soft shadow.
+ * The blur behind it comes from picom. */
+
+configuration {
+    font: "Inter 12";
+    show-icons: true;
+    icon-theme: "hicolor";
+    drun-display-format: "{name}";
+    display-drun: "";
+    kb-row-up: "Up,Control+k";
+    kb-row-down: "Down,Control+j";
+    kb-accept-entry: "Return,KP_Enter";
+    kb-cancel: "Escape,Control+g";
+}
+
+* {
+    void:      #07060D;
+    surface:   #14102A;
+    primary:   #785AC8;
+    primaryHi: #A88BFF;
+    accent:    #2DD4BF;
+    text:      #F5F3FF;
+    muted:     #A9A3C9;
+    glass:     rgba(20, 16, 42, 0.62);
+    stroke:    rgba(255, 255, 255, 0.16);
+    hover:     rgba(255, 255, 255, 0.10);
+}
+
+window {
+    width: 46%;
+    padding: 18px;
+    border: 1px;
+    border-color: @stroke;
+    border-radius: 20px;
+    background-color: @glass;
+    location: center;
+}
+
+mainbox {
+    children: [ inputbar, listview ];
+    spacing: 14px;
+}
+
+inputbar {
+    children: [ prompt, entry ];
+    padding: 12px 16px;
+    spacing: 12px;
+    border: 1px;
+    border-color: @stroke;
+    border-radius: 14px;
+    background-color: rgba(255, 255, 255, 0.06);
+}
+
+prompt {
+    text-color: @primaryHi;
+    padding: 0 4px;
+}
+
+entry {
+    text-color: @text;
+    placeholder: "Buscar aplicativos...";
+    placeholder-color: @muted;
+}
+
+listview {
+    lines: 8;
+    columns: 1;
+    spacing: 6px;
+    scrollbar: false;
+    border: 0;
+    background-color: transparent;
+}
+
+element {
+    padding: 10px 14px;
+    spacing: 12px;
+    border-radius: 12px;
+    background-color: transparent;
+    text-color: @text;
+}
+
+element selected {
+    background-color: @hover;
+    border: 1px;
+    border-color: @stroke;
+    text-color: @text;
+}
+
+element-icon {
+    size: 22px;
+    background-color: transparent;
+}
+
+element-text {
+    vertical-align: 0.5;
+    background-color: transparent;
+    text-color: inherit;
+}

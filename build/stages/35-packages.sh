@@ -40,9 +40,19 @@ stage_main() {
 deb [trusted=yes] file://$tmp $reb main
 EOF
 
+    # kolinos-desktop (FASE 7) is opt-in: when enabled, it is installed together
+    # with the base so the desktop's Debian dependencies (openbox, picom, …) are
+    # resolved by APT against the live Debian mirror, exactly like on a user's
+    # machine. Without --with-desktop the system keeps only the lean base set.
+    local install_set="kolinos-base"
+    if [ "${KOLIN_DESKTOP:-0}" = 1 ]; then
+        install_set="kolinos-base kolinos-desktop"
+        log "incluindo o desktop Corvo Glass (--with-desktop)"
+    fi
+
     kolin_run "$r" "export DEBIAN_FRONTEND=noninteractive
         apt-get update -qq
-        apt-get install -y -qq --no-install-recommends kolinos-base"
+        apt-get install -y -qq --no-install-recommends $install_set"
 
     # The metapackage depends on kolinos-tools|branding, but the specific
     # provider must be pinned so APT cannot satisfy it with a same-named
@@ -50,7 +60,8 @@ EOF
     # intent should be explicit). Record what got installed for verification.
     mkdir -p "$KOLIN_OUTPUT_DIR"
     kolin_run "$r" "dpkg-query -W -f='\${Package} \${Version} \${Architecture}\n' \
-        kolinos-base kolinos-tools kolinos-branding | sort" \
+        kolinos-base kolinos-tools kolinos-branding kolinos-theme kolinos-desktop \
+        2>/dev/null | sort" \
         > "$KOLIN_OUTPUT_DIR/kolinos-packages.txt"
 
     log "pacotes KolinOS instalados:"

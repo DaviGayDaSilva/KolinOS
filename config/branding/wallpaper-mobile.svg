@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 2400" width="1080" height="2400">
+  <!-- KolinOS "Corvo Glass" mobile wallpaper (1080x2400).
+       Tokens in colours; rendered to PNG by scripts/artifacts/render-assets.sh. -->
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="30%" r="90%">
+      <stop offset="0%"  stop-color="#@KOLIN_GLASS_SURFACE@"/>
+      <stop offset="55%" stop-color="#@KOLIN_GLASS_BASE@"/>
+      <stop offset="100%" stop-color="#@KOLIN_GLASS_VOID@"/>
+    </radialGradient>
+    <linearGradient id="violet" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#@KOLIN_GLASS_PRIMARY_HI@"/>
+      <stop offset="100%" stop-color="#@KOLIN_GLASS_PRIMARY@"/>
+    </linearGradient>
+    <linearGradient id="cyan" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0%" stop-color="#@KOLIN_GLASS_ACCENT@"/>
+      <stop offset="100%" stop-color="#@KOLIN_GLASS_PRIMARY@"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#FFFFFF" stop-opacity="0.10"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.03"/>
+    </linearGradient>
+    <filter id="blur120" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="120"/>
+    </filter>
+    <filter id="blur40" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="40"/>
+    </filter>
+    <filter id="cardShadow" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="24" stdDeviation="42" flood-color="#000000" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+
+  <rect width="1080" height="2400" fill="url(#bg)"/>
+
+  <!-- chromatic orbs -->
+  <circle cx="220" cy="330" r="300" fill="url(#violet)" opacity="0.75" filter="url(#blur120)"/>
+  <circle cx="900" cy="2050" r="330" fill="url(#cyan)" opacity="0.55" filter="url(#blur120)"/>
+  <circle cx="880" cy="640" r="170" fill="#@KOLIN_GLASS_ACCENT@" opacity="0.30" filter="url(#blur120)"/>
+
+  <!-- faint grain/grid -->
+  <g stroke="#FFFFFF" stroke-opacity="0.035" stroke-width="1">
+    <path d="M0 600 H1080 M0 1200 H1080 M0 1800 H1080"/>
+    <path d="M270 0 V2400 M540 0 V2400 M810 0 V2400"/>
+  </g>
+
+  <!-- floating glass cards -->
+  <g filter="url(#cardShadow)">
+    <rect x="120" y="820" width="840" height="300" rx="44" fill="url(#glass)"
+          stroke="#FFFFFF" stroke-opacity="0.18" stroke-width="2"/>
+    <rect x="180" y="1190" width="720" height="200" rx="36" fill="url(#glass)"
+          stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="2" opacity="0.9"/>
+    <rect x="150" y="1470" width="560" height="150" rx="32" fill="url(#glass)"
+          stroke="#FFFFFF" stroke-opacity="0.12" stroke-width="2" opacity="0.8"/>
+  </g>
+
+  <!-- brand mark -->
+  <g transform="translate(540 640)" filter="url(#cardShadow)">
+    <circle r="150" fill="#FFFFFF" fill-opacity="0.05" stroke="#FFFFFF" stroke-opacity="0.16" stroke-width="2"/>
+    <circle r="126" fill="none" stroke="url(#violet)" stroke-opacity="0.8" stroke-width="6"/>
+    <path d="M-64 -24 l40 -36 l40 36 l-40 36 z" fill="url(#violet)"/>
+    <path d="M-16 -24 l40 -36 l40 36 l-40 36 z" fill="url(#violet)"/>
+    <path d="M-36 16 l72 0 l-36 84 z" fill="#@KOLIN_GLASS_ACCENT@" opacity="0.9"/>
+  </g>
+
+  <!-- wordmark -->
+  <text x="540" y="2300" text-anchor="middle" font-family="Inter, DejaVu Sans, sans-serif"
+        font-size="54" font-weight="600" letter-spacing="18" fill="#@KOLIN_GLASS_TEXT@" opacity="0.75">KOLINOS</text>
+  <text x="540" y="2360" text-anchor="middle" font-family="Inter, DejaVu Sans, sans-serif"
+        font-size="26" letter-spacing="10" fill="#@KOLIN_GLASS_MUTED@" opacity="0.7">CORVO · 1.0</text>
+</svg>

@@ -49,3 +49,20 @@ KOLIN_COLOR_MUTED="245"     # cinza — texto secundário
 KOLIN_COLOR_OK="76"
 KOLIN_COLOR_WARN="214"
 KOLIN_COLOR_ERR="203"
+
+# "Corvo Glass" palette (FASE 7) — the graphical interface. Hex RGB, no '#'
+# (hex is re-added where needed) so the values survive shell parsing and can be
+# injected into SVG, CSS, Xresources and rasi templates alike. Single source of
+# truth for config/desktop/* and config/branding/wallpaper-*.svg.
+KOLIN_GLASS_VOID="07060D"
+KOLIN_GLASS_BASE="0C0A16"
+KOLIN_GLASS_SURFACE="14102A"
+KOLIN_GLASS_STROKE="FFFFFF26"
+KOLIN_GLASS_PRIMARY="785AC8"
+KOLIN_GLASS_PRIMARY_HI="A88BFF"
+KOLIN_GLASS_ACCENT="2DD4BF"
+KOLIN_GLASS_TEXT="F5F3FF"
+KOLIN_GLASS_MUTED="A9A3C9"
+KOLIN_GLASS_OK="4ADE80"
+KOLIN_GLASS_WARN="FBBF24"
+KOLIN_GLASS_ERR="FB7185"

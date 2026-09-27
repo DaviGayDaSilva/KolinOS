@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# kolinos-launcher — open the KolinOS app launcher (rofi) with the glass theme.
+# Falls back to a plain list of installed apps when rofi is missing.
+set -u
+
+have() { command -v "$1" >/dev/null 2>&1; }
+log()  { printf '[launcher] %s\n' "$*"; }
+
+if have rofi; then
+    exec rofi -show drun -theme /etc/xdg/rofi/kolinos.rasi -show-icons
+fi
+
+log "rofi ausente; aplicativos instalados:"
+for d in /usr/share/applications/*.desktop; do
+    [ -f "$d" ] || continue
+    name="$(awk -F= '/^Name=/{print $2; exit}' "$d")"
+    [ -n "$name" ] && printf '  * %s\n' "$name"
+done

@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- KolinOS "Corvo Glass" emblem — geometric crow face, front view.
+       Colours come from VERSION via @KOLIN_GLASS_*@ tokens, substituted by
+       scripts/artifacts/render-assets.sh at build time. -->
+  <defs>
+    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%"   stop-color="#@KOLIN_GLASS_PRIMARY_HI@"/>
+      <stop offset="55%"  stop-color="#@KOLIN_GLASS_PRIMARY@"/>
+      <stop offset="100%" stop-color="#@KOLIN_GLASS_ACCENT@"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="42%" r="55%">
+      <stop offset="0%"   stop-color="#@KOLIN_GLASS_PRIMARY@"/>
+      <stop offset="60%"  stop-color="#@KOLIN_GLASS_PRIMARY@"/>
+      <stop offset="100%" stop-color="#@KOLIN_GLASS_VOID@"/>
+    </radialGradient>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="26"/>
+    </filter>
+    <filter id="glassShadow" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="10" stdDeviation="22" flood-color="#000000" flood-opacity="0.55"/>
+    </filter>
+  </defs>
+
+  <!-- aura -->
+  <circle cx="512" cy="470" r="430" fill="url(#glow)" opacity="0.28" filter="url(#soft)"/>
+
+  <!-- glass disc -->
+  <circle cx="512" cy="512" r="376" fill="#FFFFFF" fill-opacity="0.05"
+          stroke="#FFFFFF" stroke-opacity="0.16" stroke-width="3" filter="url(#glassShadow)"/>
+  <circle cx="512" cy="512" r="330" fill="none"
+          stroke="url(#ring)" stroke-opacity="0.75" stroke-width="10"/>
+
+  <!-- crow eyes: two diamonds -->
+  <g>
+    <path d="M392 430 l64 -58 l64 58 l-64 58 z" fill="url(#ring)"/>
+    <path d="M504 430 l64 -58 l64 58 l-64 58 z" fill="url(#ring)"/>
+    <!-- glints -->
+    <path d="M400 430 l14 -13 l14 13 l-14 13 z" fill="#@KOLIN_GLASS_TEXT@" opacity="0.85"/>
+    <path d="M512 430 l14 -13 l14 13 l-14 13 z" fill="#@KOLIN_GLASS_TEXT@" opacity="0.85"/>
+  </g>
+
+  <!-- beak: downward wedge -->
+  <path d="M448 500 l128 0 l-64 148 z" fill="#@KOLIN_GLASS_ACCENT@" opacity="0.9"/>
+  <path d="M448 500 l128 0 l-64 40 z" fill="#FFFFFF" opacity="0.16"/>
+</svg>

@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+# kolinos-session — start the KolinOS "Corvo Glass" graphical session (FASE 7).
+#
+# Where this runs and what to expect:
+#
+#   * REAL HARDWARE / normal X host : start it from a local TTY after logging in
+#     (`kolinos-session`) or let lightdm start it via the session .desktop file.
+#   * TERMUX (Android, no root)     : you need an X server first. Install
+#     Termux:X11 (app) and the `termux-x11` package, then from a Termux shell:
+#         termux-x11 :0 & DISPLAY=:0 kolinos-session
+#     This runs INSIDE the proot-distro rootfs; the X server itself lives in
+#     Termux. Not all effects work: Termux:X11 has no compositor GL guarantees,
+#     so picom may fall back to software rendering or be skipped (see below).
+#   * NO X AT ALL (plain proot)     : this script refuses to run rather than
+#     printing a wall of X errors. Run KolinOS as a CLI system until you have an
+#     X server.
+#
+# It starts openbox (WM) + picom (compositor) + tint2 (panel), sets the
+# wallpaper and, on the first run, a default theme. Missing components are
+# skipped with a warning, so a partial install still gives a usable desktop.
+set -u
+
+KOLIN_NAME="KolinOS"
+log()  { printf '[sessao] %s\n' "$*"; }
+warn() { printf '[sessao][aviso] %s\n' "$*" >&2; }
+die()  { printf '[sessao][erro] %s\n' "$*" >&2; exit 1; }
+
+have() { command -v "$1" >/dev/null 2>&1; }
+
+case "${1:-}" in
+    -h|--help)
+        sed -n '2,20p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+        exit 0 ;;
+esac
+
+[ -n "${DISPLAY:-}" ] || die "sem DISPLAY: defina um servidor X (veja --help)"
+
+log "iniciando $KOLIN_NAME — tema Corvo Glass (DISPLAY=$DISPLAY)"
+
+# --- theme + wallpaper -----------------------------------------------------
+export GTK2_RC_FILES="${GTK2_RC_FILES:-/usr/share/themes/CorvoGlass/gtk-2.0/gtkrc}"
+export GTK_THEME="${GTK_THEME:-CorvoGlass}"
+export XDG_CURRENT_DESKTOP=KolinOS
+export XDG_SESSION_DESKTOP=kolinos
+if have xrdb && [ -f /etc/xdg/kolinos/Xresources ]; then
+    xrdb -merge /etc/xdg/kolinos/Xresources 2>/dev/null || warn "xrdb falhou"
+fi
+
+# --- compositor (the actual glass effect) ----------------------------------
+start_compositor() {
+    have picom || { warn "picom ausente: as superficies ficarao opacas"; return; }
+    local log_f=/tmp/kolinos-picom.log
+    picom --config /etc/xdg/picom/kolinos.conf --daemon >"$log_f" 2>&1
+    sleep 1
+    if pgrep -x picom >/dev/null 2>&1; then
+        log "picom ativo (vidro/blur habilitados)"
+    else
+        warn "picom nao subiu (GL indisponivel? veja $log_f) — tentando perfil leve"
+        picom --backend xrender --config /dev/null --daemon >"$log_f" 2>&1 || true
+        pgrep -x picom >/dev/null 2>&1 && log "picom ativo (perfil leve, sem blur)" \
+            || warn "compositor desativado; interface seguira sem vidro"
+    fi
+}
+
+# --- panel -----------------------------------------------------------------
+start_panel() {
+    have tint2 || { warn "tint2 ausente: sem painel"; return; }
+    tint2 -c /etc/xdg/tint2/kolinos.tint2rc >/tmp/kolinos-tint2.log 2>&1 &
+    log "tint2 ativo (painel)"
+}
+
+# --- wallpaper -------------------------------------------------------------
+set_wallpaper() {
+    if have kolinos-wallpaper; then
+        kolinos-wallpaper || warn "kolinos-wallpaper falhou"
+    fi
+}
+
+start_compositor
+start_panel
+set_wallpaper
+
+# --- window manager (foreground; when it exits the session ends) ------------
+if have openbox; then
+    log "openbox (WM) — sessao ativa. Saia com o menu (botao direito) > Exit."
+    exec openbox --config-file /etc/xdg/kolinos/openbox/rc.xml
+else
+    die "openbox ausente: instale o metapacote kolinos-desktop"
+fi

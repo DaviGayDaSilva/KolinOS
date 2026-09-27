@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=KolinOS Launcher
+Comment=Buscar e abrir aplicativos
+Exec=/usr/bin/kolinos-launcher
+TryExec=/usr/bin/kolinos-launcher
+Icon=kolinos
+Terminal=false
+Categories=System;Utility;
+Keywords=launcher;run;search;
+StartupNotify=false

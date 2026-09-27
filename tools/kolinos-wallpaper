@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# kolinos-wallpaper — set the KolinOS "Corvo Glass" wallpaper (FASE 7).
+#
+# Chooses the right image for the screen aspect ratio and applies it with feh
+# (or hsetroot/xwallpaper if available). Safe to run outside a graphical
+# session: it exits quietly instead of failing.
+#
+# Usage: kolinos-wallpaper [--mobile|--desktop|PATH]
+set -u
+
+WALL_DIR=/usr/share/backgrounds/kolinos
+MOBILE="$WALL_DIR/kolinos-corvo-mobile.png"
+DESKTOP="$WALL_DIR/kolinos-corvo-desktop.png"
+
+have() { command -v "$1" >/dev/null 2>&1; }
+warn() { printf '[wallpaper][aviso] %s\n' "$*" >&2; }
+
+[ -n "${DISPLAY:-}" ] || [ -n "${WAYLAND_DISPLAY:-}" ] || { warn "sem servidor grafico"; exit 0; }
+
+img="$DESKTOP"
+case "${1:-}" in
+    --mobile)  img="$MOBILE" ;;
+    --desktop) img="$DESKTOP" ;;
+    "")        if have xrandr; then
+                   # Portrait-ish screen => phone: use the vertical wallpaper.
+                   dims="$(xrandr 2>/dev/null | awk '/\*/{print $1; exit}')"
+                   w="${dims%x*}"; h="${dims#*x}"
+                   [ -n "$w" ] && [ -n "$h" ] && [ "$h" -gt "$w" ] && img="$MOBILE"
+               fi ;;
+    *)         img="$1" ;;
+esac
+
+[ -f "$img" ] || { warn "wallpaper nao encontrado: $img (rode o build com os assets)"; exit 1; }
+
+if have feh; then
+    feh --bg-fill "$img"
+elif have hsetroot; then
+    hsetroot -fill "$img"
+elif have xwallpaper; then
+    xwallpaper --zoom "$img"
+else
+    warn "nenhum aplicador de wallpaper (feh/hsetroot/xwallpaper) instalado"
+    exit 1
+fi

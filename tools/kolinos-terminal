@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# kolinos-terminal — open a terminal with the KolinOS "Corvo Glass" look.
+#
+# Picks the first terminal that is installed, in order of visual quality:
+#   foot (Wayland/light) -> xterm -> urxvt -> plain shell fallback.
+# In a graphical session the terminal is translucent and picom blurs what is
+# behind it; outside X it just falls back to a normal shell.
+set -u
+
+have() { command -v "$1" >/dev/null 2>&1; }
+log()  { printf '[term] %s\n' "$*"; }
+
+if [ -z "${DISPLAY:-}" ] && [ -z "${WAYLAND_DISPLAY:-}" ]; then
+    log "sem servidor grafico: abrindo um shell comum"
+    exec "${SHELL:-/bin/bash}" -l
+fi
+
+if have foot; then
+    exec foot -c /etc/xdg/foot/kolinos.ini
+elif have xterm; then
+    exec xterm -class XTerm -e "${SHELL:-/bin/bash}" -l
+elif have urxvt; then
+    exec urxvt -e "${SHELL:-/bin/bash}" -l
+else
+    log "nenhum terminal grafico instalado (foot/xterm/urxvt) — usando shell"
+    exec "${SHELL:-/bin/bash}" -l
+fi

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- KolinOS "Corvo Glass" — openbox configuration (FASE 7)
+     Install path: /etc/xdg/kolinos/openbox/rc.xml
+     (openbox's own package owns /etc/xdg/openbox/rc.xml, so KolinOS keeps its
+     config in a private directory and kolinos-session loads it with
+     --config-file; openbox then also finds menu.xml next to it.)
+     Theme + colours; the visual "glass" (blur, rounding, shadows) comes from
+     picom. Bindings assume a phone/tablet-friendly layout and a Super key. -->
+<openbox_config xmlns="http://openbox.org/3.4/rc">
+  <resistance><strength>10</strength><screen_edge_strength>20</screen_edge_strength></resistance>
+  <focus>
+    <focusNew>yes</focusNew>
+    <followMouse>no</followMouse>
+    <focusLast>yes</focusLast>
+    <underMouse>no</underMouse>
+    <focusDelay>200</focusDelay>
+    <raiseOnFocus>no</raiseOnFocus>
+  </focus>
+  <placement>
+    <policy>Smart</policy>
+    <center>yes</center>
+    <monitor>Primary</monitor>
+    <primaryMonitor>1</primaryMonitor>
+  </placement>
+  <theme>
+    <name>CorvoGlass</name>
+    <titleLayout>NLIMC</titleLayout>
+    <keepBorder>yes</keepBorder>
+    <animateIconify>yes</animateIconify>
+    <font place="ActiveWindow"><name>Inter</name><size>10</size><weight>Bold</weight></font>
+    <font place="InactiveWindow"><name>Inter</name><size>10</size><weight>Normal</weight></font>
+    <font place="MenuHeader"><name>Inter</name><size>10</size><weight>Bold</weight></font>
+    <font place="MenuItem"><name>Inter</name><size>10</size><weight>Normal</weight></font>
+    <font place="OnScreenDisplay"><name>Inter</name><size>10</size><weight>Bold</weight></font>
+  </theme>
+  <desktops>
+    <number>2</number>
+    <firstdesk>1</firstdesk>
+    <names><name>principal</name><name>midia</name></names>
+    <popupTime>0</popupTime>
+  </desktops>
+  <resize><drawContents>yes</drawContents></resize>
+  <keyboard>
+    <chainQuitKey>C-g</chainQuitKey>
+    <keybind key="A-Return"><action name="Execute"><command>kolinos-terminal</command></action></keybind>
+    <keybind key="W-Return"><action name="Execute"><command>kolinos-terminal</command></action></keybind>
+    <keybind key="W-d"><action name="Execute"><command>kolinos-launcher</command></action></keybind>
+    <keybind key="W-w"><action name="Execute"><command>kolinos-wallpaper</command></action></keybind>
+    <keybind key="W-q"><action name="Close"/></keybind>
+    <keybind key="W-Tab"><action name="NextWindow"><dialog>no</dialog></action></keybind>
+    <keybind key="A-F4"><action name="Close"/></keybind>
+    <keybind key="W-Left"><action name="GoToDesktop"><to>previous</to></action></keybind>
+    <keybind key="W-Right"><action name="GoToDesktop"><to>next</to></action></keybind>
+    <keybind key="A-Tab"><action name="NextWindow"><dialog>no</dialog></action></keybind>
+    <keybind key="W-F1"><action name="Execute"><command>kolinos-info</command></action></keybind>
+  </keyboard>
+  <mouse>
+    <dragThreshold>8</dragThreshold>
+    <doubleClickTime>300</doubleClickTime>
+    <screenEdgeWarpTime>400</screenEdgeWarpTime>
+    <context name="Frame">
+      <mousebind button="A-Left" action="Press"><action name="Focus"/><action name="Raise"/></mousebind>
+      <mousebind button="A-Left" action="Drag"><action name="Move"/></mousebind>
+      <mousebind button="A-Right" action="Drag"><action name="Resize"/></mousebind>
+    </context>
+    <context name="Titlebar">
+      <mousebind button="Left" action="Drag"><action name="Move"/></mousebind>
+      <mousebind button="Left" action="DoubleClick"><action name="ToggleMaximize"/></mousebind>
+    </context>
+    <context name="Client">
+      <mousebind button="Left" action="Press"><action name="Focus"/><action name="Raise"/></mousebind>
+    </context>
+    <context name="Root">
+      <mousebind button="Right" action="Press"><action name="ShowMenu"><menu>root-menu</menu></action></mousebind>
+      <mousebind button="Middle" action="Press"><action name="ShowMenu"><menu>client-list-combined-menu</menu></action></mousebind>
+    </context>
+  </mouse>
+  <applications>
+    <application class="tint2"><layer>above</layer><desktop>all</desktop><decor>no</decor><position force="yes"><x>center</x><y>top</y></position></application>
+    <application class="feh"><layer>below</layer><desktop>all</desktop><decor>no</decor><focus>no</focus><position force="yes"><x>center</x><y>center</y></position></application>
+    <application class="Rofi"><decor>no</decor><position force="yes"><x>center</x><y>center</y></position></application>
+  </applications>
+</openbox_config>

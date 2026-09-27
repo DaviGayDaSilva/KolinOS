@@ -92,6 +92,27 @@ else
     printf '  \033[1;32m✔\033[0m repo de build removido do rootfs\n'
 fi
 
+printf '\nDesktop Corvo Glass (FASE 7):\n'
+if kolin_run "$R" 'dpkg-query -W kolinos-desktop >/dev/null 2>&1'; then
+    check "kolinos-desktop instalado"   'dpkg-query -W -f="\${Version}" kolinos-desktop'
+    check "kolinos-theme instalado"     'dpkg-query -W -f="\${Version}" kolinos-theme'
+    check "kolinos-session presente"    'test -x /usr/bin/kolinos-session && echo ok'
+    check "tema GTK3 instalado"         'test -f /usr/share/themes/CorvoGlass/gtk-3.0/gtk.css && echo ok'
+    check "tema openbox instalado"      'test -f /usr/share/themes/CorvoGlass/openbox-3/themerc && echo ok'
+    check "config picom instalado"      'test -f /etc/xdg/picom/kolinos.conf && echo ok'
+    check "config tint2 instalado"      'test -f /etc/xdg/tint2/kolinos.tint2rc && echo ok'
+    check "wallpaper mobile instalado"  'test -f /usr/share/backgrounds/kolinos/kolinos-corvo-mobile.png && echo ok'
+    check "sessão X registrada"         'test -f /usr/share/xsessions/kolinos.desktop && echo ok'
+    check "config openbox própria"      'test -f /etc/xdg/kolinos/openbox/rc.xml && test -f /etc/xdg/kolinos/openbox/menu.xml && echo ok'
+    check "sessão usa config openbox própria" 'grep -q /etc/xdg/kolinos/openbox/rc.xml /usr/bin/kolinos-session && echo ok'
+    check "não sobrescreve xinitrc do xinit" 'dpkg -S /etc/X11/xinit/xinitrc | grep -q "^xinit" && echo ok'
+    check "não sobrescreve rc.xml do openbox" 'dpkg -S /etc/xdg/openbox/rc.xml | grep -q "^openbox" && echo ok'
+    check "dpkg -V limpo (tema)"         'dpkg -V kolinos-theme kolinos-desktop && echo ok'
+    check "arquivos do tema pertencem ao dpkg" 'dpkg -S /usr/share/themes/CorvoGlass/gtk-3.0/gtk.css >/dev/null && echo ok'
+else
+    printf '  \033[1;33m·\033[0m desktop não instalado (build sem --with-desktop): pulando\n'
+fi
+
 printf '\nArquitetura esperada: %s\n\n' "$KOLIN_ARCH"
 if [ "$fail" -ne 0 ]; then die "verificação encontrou falhas"; fi
 log "todas as verificações passaram"

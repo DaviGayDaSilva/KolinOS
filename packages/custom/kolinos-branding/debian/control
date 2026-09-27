@@ -6,4 +6,6 @@ Priority: optional
 Depends: bash
 Description: KolinOS visual identity assets
  Logo, colour palette and shell colour helpers used by KolinOS tooling and by
- its motd. Installed under /etc/kolinos/branding.
+ its motd. Installed under /etc/kolinos/branding. Also ships the graphical
+ wallpaper, logo and icon assets rendered from the SVG sources (Corvo Glass,
+ FASE 7) under /usr/share/backgrounds/kolinos and /usr/share/icons/hicolor.
