@@ -38,16 +38,19 @@ TARBALL="$(ls "$OUT"/kolinos-*-"$KOLIN_ARCH".tar.xz 2>/dev/null | head -1 || tru
 [ -n "$TARBALL" ] || die "archives do rootfs não encontrado em $OUT (rode o build antes)"
 
 log "montando árvore em $STAGE"
-mkdir -p "$STAGE/rootfs" "$STAGE/docs" "$STAGE/install/scripts/termux" "$STAGE/install/scripts/host" \
-         "$STAGE/install/config" "$STAGE/install/packages" "$STAGE/install/tools"
+mkdir -p "$STAGE/rootfs" "$STAGE/docs" "$STAGE/install" \
+         "$STAGE/src/scripts/termux" "$STAGE/src/scripts/host" \
+         "$STAGE/src/config" "$STAGE/src/packages" "$STAGE/src/tools"
 
 # Rootfs + project source payload.
 cp -a "$TARBALL" "$STAGE/rootfs/"
-cp -a "$ROOT/VERSION" "$ROOT/LICENSE" "$ROOT/build.sh" "$STAGE/"
-cp -a "$ROOT/build" "$ROOT/config" "$ROOT/packages" "$ROOT/tools" "$STAGE/install/"
+cp -a "$ROOT/VERSION" "$ROOT/LICENSE" "$ROOT/build.sh" "$STAGE/src/"
+cp -a "$ROOT/build" "$ROOT/config" "$ROOT/packages" "$ROOT/tools" "$STAGE/src/"
 cp -a "$ROOT/docs/." "$STAGE/docs/"
-cp -a "$ROOT/scripts/termux" "$ROOT/scripts/host" "$STAGE/install/scripts/" 2>/dev/null || true
-cp -a "$ROOT/repo" "$STAGE/install/" 2>/dev/null || true
+cp -a "$ROOT/scripts/termux" "$ROOT/scripts/host" "$STAGE/src/scripts/" 2>/dev/null || true
+cp -a "$ROOT/repo" "$STAGE/src/" 2>/dev/null || true
+# Unified installer (FASE 6): positional install/ tree, self-contained.
+cp -a "$ROOT/install/." "$STAGE/install/"
 
 # Manifest with the archive checksum, consumed by the Termux installer.
 SUM="$(sha256sum "$TARBALL" | awk '{print $1}')"
@@ -69,16 +72,22 @@ Este ISO é um CARRIER de dados, não uma imagem inicializável.
 Ele contém:
 
   rootfs/    root filesystem Debian ARM64 personalizado como KolinOS
-  install/   código-fonte do sistema de build + instalador para Termux
+  install/   instalador unificado (kolinos-install.sh + backends proot/dir/disk)
+  src/       código-fonte do sistema de build
   docs/      documentação (fases, limitações, roadmap)
   MANIFEST   metadados + checksum SHA-256 do rootfs
 
 Como usar no Termux (Android, arm64):
 
   pkg install proot-distro
-  bash install/scripts/termux/install.sh rootfs/$(basename "$TARBALL")
+  bash install/kolinos-install.sh rootfs/$(basename "$TARBALL")
 
-Detalhes: veja docs/README.md e docs/PHASES.md.
+Em um host Linux com root (implantar em um diretório):
+
+  sudo bash install/kolinos-install.sh --target dir --dest /opt/kolinos \
+       rootfs/$(basename "$TARBALL")
+
+Detalhes: veja docs/README.md, docs/PHASES.md e docs/PHASE6.md.
 Base: Debian ${KOLIN_DEBIAN_SUITE}. Licenças dos pacotes: /usr/share/doc/*/copyright.
 EOF
 

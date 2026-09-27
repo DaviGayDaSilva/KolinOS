@@ -132,20 +132,33 @@ Fora de escopo (fica para depois):
 
 ---
 
-## FASE 6 — Sistema de instalação 🟡
+## FASE 6 — Sistema de instalação ✅
 
 **Objetivo:** instalar o KolinOS com um comando.
 
 O que existe:
 
-- `scripts/termux/install.sh`: instala o rootfs no Termux via `proot-distro`
-  (v5 usa o arquivo local; v4 usa plugin gerado automaticamente).
-- Cria o atalho `kolinos` no Termux e valida a instalação ao final.
+- `install/kolinos-install.sh`: front-end único que detecta o ambiente e escolhe
+  o backend.
+- `install/targets/proot.sh`: instala o rootfs no Termux via `proot-distro`
+  (v5 usa o arquivo local; v4 usa plugin gerado automaticamente). Sem root.
+- `install/targets/dir.sh`: implanta o rootfs em um diretório de um host Linux
+  (com root) e finaliza com o first boot; entra por `chroot`.
+- `install/targets/disk.sh`: escreve o rootfs num dispositivo de bloco
+  (groundwork da Fase 10, com travas destrutivas).
+- `tools/kolinos-firstboot` (pacote `kolinos-tools`): setup idempotente que roda
+  uma vez — machine-id, resolv.conf de runtime, repositório APT e resumo.
+- `config/firstboot/kolinos-firstboot.sh`: gancho de login que dispara o first
+  boot em mídias escritas sem o instalador.
+- `scripts/termux/install.sh` agora é um shim que encaminha para o front-end.
+- `scripts/host/verify-installer.sh`: verificador do instalador, roda nativo.
 - `scripts/host/enter.sh` para chroot no host.
 
 Falta ainda:
 
-- Instalador para hardware real (a partir da Fase 10).
+- Instalador para hardware real bootável (kernel + bootloader — Fase 10).
+
+Detalhes em [`docs/PHASE6.md`](PHASE6.md).
 
 ---
 

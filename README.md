@@ -11,11 +11,12 @@ desenvolvimento, execução dentro do **Termux** usando `proot` (sem root).
 - **Arquitetura principal:** arm64 / aarch64
 - **Gerenciador de pacotes:** APT/DPKG (é Debian por dentro)
 
-> Estado atual: **Fases 1, 2, 3, 4 e 5** concluídas. Veja [`docs/PHASES.md`](docs/PHASES.md)
+> Estado atual: **Fases 1, 2, 3, 4, 5 e 6** concluídas. Veja [`docs/PHASES.md`](docs/PHASES.md)
 > para o roadmap, [`docs/PHASE2.md`](docs/PHASE2.md) (base mínima),
 > [`docs/PHASE3.md`](docs/PHASE3.md) (identidade visual),
 > [`docs/PHASE4.md`](docs/PHASE4.md) (build reproduzível),
-> [`docs/PHASE5.md`](docs/PHASE5.md) (pacotes próprios `.deb`), além de
+> [`docs/PHASE5.md`](docs/PHASE5.md) (pacotes próprios `.deb`),
+> [`docs/PHASE6.md`](docs/PHASE6.md) (sistema de instalação), além de
 > [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md) para o que funciona (e o que não
 > funciona) em Termux/proot/root.
 
@@ -29,12 +30,16 @@ Pré-requisito: Termux instalado do F-Droid ou dos releases oficiais do GitHub.
 
 ```sh
 pkg update && pkg install -y proot-distro
-# Instalar um rootfs KolinOS já construído:
-bash scripts/termux/install.sh /caminho/para/kolinos-1.0.0-corvo-arm64.tar.xz
+# Instalar um rootfs KolinOS já construído (instalador unificado):
+bash install/kolinos-install.sh /caminho/para/kolinos-1.0.0-corvo-arm64.tar.xz
 # Entrar no sistema:
 kolinos
 kolinos-info
 ```
+
+O instalador detecta o Termux e usa `proot-distro` automaticamente. Em um host
+Linux com root ele pode implantar num diretório (`--target dir`) ou num
+dispositivo (`--target disk`). Veja [`docs/PHASE6.md`](docs/PHASE6.md).
 
 ### Em um host Linux (Debian/Ubuntu) — para construir o rootfs
 
@@ -69,7 +74,7 @@ Resultado em `output/`:
 | `SHA256SUMS`, `SOURCE-SHA256SUMS`, `METADATA.txt` | checksums e metadados do build |
 
 Para usar no Termux, transfira o `.tar.xz` para o celular e rode
-`scripts/termux/install.sh`.
+`install/kolinos-install.sh`.
 
 ---
 
@@ -99,7 +104,12 @@ kolinos/
 │   ├── skel/                # perfis de shell, prompt
 │   ├── issue
 │   ├── apt/                 # snippets de APT, chave de confiança
+│   ├── firstboot/           # gancho de login que finaliza o first boot (Fase 6)
 │   └── postinstall/         # hooks executados dentro do rootfs
+├── install/                 # instalador unificado (Fase 6)
+│   ├── kolinos-install.sh   #   front-end: detecta o ambiente e despacha
+│   ├── lib/common.sh        #   detecção, checksum, travas de segurança
+│   └── targets/             #   proot.sh | dir.sh | disk.sh
 ├── packages/
 │   ├── debian.list          # pacotes Debian do sistema base
 │   └── custom/              # receitas dos pacotes KolinOS (Fase 5)
@@ -112,8 +122,8 @@ kolinos/
 │   └── conf/
 ├── tools/                   # ferramentas KolinOS (viram o pacote kolinos-tools)
 ├── scripts/
-│   ├── termux/install.sh    # instala o rootfs no Termux (proot-distro v4/v5)
-│   ├── host/                # enter.sh, verify-rootfs.sh, build-deb.sh
+│   ├── termux/install.sh    # shim que encaminha para install/ --target proot
+│   ├── host/                # enter.sh, verify-rootfs.sh, verify-installer.sh, build-deb.sh
 │   └── artifacts/           # make-iso.sh, make-source-zip.sh
 ├── docs/                    # documentação detalhada
 ├── rootfs/                  # rootfs em construção (gerado; não versionado)
@@ -158,6 +168,7 @@ Opções úteis: `--arch`, `--suite`, `--mirror`, `--snapshot`, `--reproducible`
 - [`docs/PHASE3.md`](docs/PHASE3.md) — identidade visual, paleta e ferramentas.
 - [`docs/PHASE4.md`](docs/PHASE4.md) — build reproduzível (snapshot, epoch, teste).
 - [`docs/PHASE5.md`](docs/PHASE5.md) — pacotes próprios `.deb` e repositório APT.
+- [`docs/PHASE6.md`](docs/PHASE6.md) — sistema de instalação (proot/dir/disk) e first boot.
 - [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md) — Termux vs proot vs root vs kernel.
 - [`docs/BUILD.md`](docs/BUILD.md) — construir, testar e entrar no sistema.
 

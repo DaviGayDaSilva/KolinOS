@@ -44,3 +44,22 @@ Ver `docs/PHASE4.md` para a lista completa.
 Não há suíte unitária. A verificação é por inspeção do rootfs com
 `scripts/host/verify-rootfs.sh` (precisa de root + qemu-user-static). Builds
 completos levam ~5 min.
+
+A FASE 6 tem seu próprio verificador nativo (não precisa de root):
+`bash scripts/host/verify-installer.sh --dest /tmp/kolinos-verify`.
+
+## ARMADILHA do sandbox — não monte /dev, /proc ou /sys
+
+Neste ambiente de agente, **nunca** faça `mount --bind /dev`,
+`mount -t proc` nem `mount -t sysfs` dentro de um chroot de teste em `/tmp`.
+Fazer isso deixa `/dev/pts` inconsistente e o terminal do sandbox morre com
+`create window failed: fork failed: No such file or directory` — sem recuperação
+(até `reset=true` falha). Pior: `sudo umount` também falha porque o próprio
+`sudo` precisa de pty.
+
+O sandbox **não** registra `qemu-aarch64` em `binfmt_misc` (montado somente
+leitura; `mount -t binfmt_misc` novo também fica RO): binários arm64 falham com
+`Exec format error` via chroot e `proot` morre com `SIGSYS`. Sem um runner
+externo, um build arm64 real **não** roda aqui. Use `--arch amd64` para validar a
+mecânica do instalador/first boot; o arm64 é validado no Termux.
+

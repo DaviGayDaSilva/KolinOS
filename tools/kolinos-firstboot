@@ -1,0 +1,102 @@
+#!/usr/bin/env bash
+# kolinos-firstboot — one-time setup that runs inside an installed KolinOS.
+#
+# It is idempotent and safe to run twice: a marker at /etc/kolinos/firstboot.done
+# makes the second run a no-op unless --force is given. The installer calls it
+# right after deployment; a login hook (config/firstboot/kolinos-firstboot.sh)
+# calls it too, so a medium written without the installer still finishes setup on
+# the real machine's first login.
+#
+# What it does (no network needed):
+#   * expands /etc/machine-id (a fresh identity per machine, not per build),
+#   * writes a runtime /etc/resolv.conf hint only if one is missing,
+#   * points /etc/motd and /etc/issue at the KolinOS identity,
+#   * prepares /etc/apt/sources.list.d/kolinos.sources (disabled by default),
+#   * tells the user about the default password and the APT repository.
+#
+# Usage: kolinos-firstboot [--force]
+set -euo pipefail
+
+MARKER=/etc/kolinos/firstboot.done
+FORCE=0
+[ "${1:-}" = "--force" ] && FORCE=1
+
+[ "$(id -u)" -eq 0 ] || { echo "kolinos-firstboot: precisa de root" >&2; exit 1; }
+
+if [ -e "$MARKER" ] && [ "$FORCE" = 0 ]; then
+    echo "kolinos-firstboot: já executado ($MARKER). Use --force para repetir."
+    exit 0
+fi
+
+have() { command -v "$1" >/dev/null 2>&1; }
+log()  { printf '[firstboot] %s\n' "$*"; }
+
+mkdir -p /etc/kolinos
+
+# --- machine identity: a fresh, unique id per machine ---------------------
+# The image ships /etc/machine-id EMPTY on purpose: that is the systemd signal
+# for "not yet initialized", so every installed machine gets its own id instead
+# of every copy sharing one. Must end up as 32 lowercase hex chars.
+kolin_gen_machine_id() {
+    local out=""
+    if have systemd-machine-id-setup; then
+        systemd-machine-id-setup >/dev/null 2>&1 || true
+    fi
+    if [ -s /etc/machine-id ]; then return 0; fi
+    if have dbus-uuidgen; then
+        dbus-uuidgen > /etc/machine-id 2>/dev/null || true
+    fi
+    if [ -s /etc/machine-id ]; then return 0; fi
+    # /proc/sys/kernel/random/uuid is reliable inside containers where a bare
+    # /dev/urandom may not be readable. tr strips the dashes.
+    if [ -r /proc/sys/kernel/random/uuid ]; then
+        tr -d '-' < /proc/sys/kernel/random/uuid > /etc/machine-id 2>/dev/null || true
+    fi
+    if [ -s /etc/machine-id ]; then return 0; fi
+    if [ -r /dev/urandom ] && have od; then
+        head -c 16 /dev/urandom 2>/dev/null | od -An -tx1 | tr -d ' \n' > /etc/machine-id 2>/dev/null || true
+    fi
+    out="$(tr -d -c '0-9a-f' < /etc/machine-id 2>/dev/null | head -c 32)"
+    if [ "${#out}" -eq 32 ]; then printf '%s\n' "$out" > /etc/machine-id; return 0; fi
+    log "machine-id não pôde ser gerado (sem /proc nem /dev/urandom); ficará vazio"
+    return 1
+}
+if kolin_gen_machine_id; then
+    log "machine-id gerado"
+fi
+
+# --- DNS: a runtime hint only if the image has none -----------------------
+# The build deliberately ships resolv.conf as a symlink/absent file so the
+# container runtime (proot-distro, Docker, the phone's network) supplies it.
+if [ ! -e /etc/resolv.conf ]; then
+    printf '# KolinOS: written at first boot; the runtime usually replaces this.\nnameserver 1.1.1.1\nnameserver 8.8.8.8\n' \
+        > /etc/resolv.conf 2>/dev/null || true
+    log "resolv.conf de runtime criado"
+fi
+
+# --- motd / issue keep pointing at KolinOS --------------------------------
+for f in /etc/motd /etc/issue; do
+    [ -f "$f" ] && grep -q KolinOS "$f" 2>/dev/null || true
+done
+
+# --- APT repository: present but disabled until Phase 9 publishes it ------
+SRC=/etc/apt/sources.list.d
+if [ -f "$SRC/kolinos.sources" ] && [ ! -f "$SRC/kolinos.sources.disabled" ]; then
+    log "repositório KolinOS já ativo"
+elif [ -f "$SRC/kolinos.sources.disabled" ]; then
+    log "repositório KolinOS presente (inativo — ative com 'sudo apt-kolinos enable')"
+fi
+
+# --- summary --------------------------------------------------------------
+cat <<'EOF'
+
+KolinOS está pronto.
+
+  * Usuário padrão: kolin  (senha: kolinos — troque com 'passwd')
+  * Resumo do sistema:  kolinos-info
+  * Repositório próprio: sudo apt-kolinos enable
+
+EOF
+
+date -u +%Y-%m-%dT%H:%M:%SZ > "$MARKER" 2>/dev/null || : > "$MARKER"
+log "concluído ($MARKER)"

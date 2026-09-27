@@ -53,6 +53,11 @@ EOF
     render_template "$KOLIN_ROOT_DIR/config/skel/kolinos.sh" "$r/etc/profile.d/kolinos.sh"
     chmod 0644 "$r/etc/profile.d/kolinos.sh"
 
+    # First-boot hook: runs the one-time setup on the first interactive login,
+    # for media written without the installer (FASE 6). Idempotent.
+    install -m 0644 "$KOLIN_ROOT_DIR/config/firstboot/kolinos-firstboot.sh" \
+        "$r/etc/profile.d/kolinos-firstboot.sh"
+
     install -d -m 0755 "$r/etc/skel" "$r/root"
     for home in "$r/etc/skel" "$r/root"; do
         [ -f "$home/.bashrc" ] || cp "$r/etc/skel/.bashrc" "$home/.bashrc" 2>/dev/null || true

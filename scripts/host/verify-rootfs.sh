@@ -79,6 +79,12 @@ check "tools pertencem ao dpkg"  'dpkg -S /usr/bin/kolinos-info'
 check "dpkg -V limpo (tools)"    'dpkg -V kolinos-tools && echo ok'
 check "apt-kolinos presente"     'command -v apt-kolinos >/dev/null && apt-kolinos status'
 check "repo remoto desativado"   'test -f /etc/apt/sources.list.d/kolinos.sources.disabled && echo ok'
+
+printf '\nInstalação (FASE 6):\n'
+check "kolinos-firstboot presente" 'command -v kolinos-firstboot >/dev/null && echo ok'
+check "firstboot pertence ao dpkg" 'dpkg -S /usr/bin/kolinos-firstboot'
+check "gancho de first boot no profile" 'test -x /usr/bin/kolinos-firstboot && grep -q kolinos-firstboot /etc/profile.d/kolinos-firstboot.sh && echo ok'
+check "first boot ainda não executado" 'test ! -e /etc/kolinos/firstboot.done && echo "pendente (esperado na imagem)"'
 # A build-time file:// repo must not leak into the shipped image.
 if kolin_run "$R" 'ls /etc/apt/sources.list.d/*kolinos-build* 2>/dev/null | grep -q .'; then
     printf '  \033[1;31m✗\033[0m repo de build vazou para o rootfs (FALHOU)\n'; fail=1

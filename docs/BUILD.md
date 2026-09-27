@@ -105,19 +105,47 @@ release). No Termux:
 
 ```sh
 pkg update && pkg install -y proot-distro
-bash scripts/termux/install.sh /sdcard/Download/kolinos-1.0.0-corvo-arm64.tar.xz
+bash install/kolinos-install.sh /sdcard/Download/kolinos-1.0.0-corvo-arm64.tar.xz
 kolinos
 ```
 
-O instalador:
+O instalador unificado detecta o Termux e usa o backend `proot`, que:
 
 1. garante `proot-distro` (e `proot`);
-2. localiza/baixa o rootfs;
-3. confere o SHA-256, se disponível;
-4. detecta a versão do proot-distro (v5: arquivo local; v4: plugin);
-5. instala o container `kolinos`;
-6. cria o atalho `kolinos` em `$PREFIX/bin`;
+2. localiza o rootfs e confere o SHA-256, se disponível;
+3. detecta a versão do proot-distro (v5: arquivo local; v4: plugin);
+4. instala o container `kolinos`;
+5. cria o atalho `kolinos` em `$PREFIX/bin`;
+6. roda o **first boot** (machine-id, resolv.conf, repositório APT);
 7. valida executando `cat /etc/os-release` dentro do container.
+
+`scripts/termux/install.sh` continua funcionando: é um shim que encaminha para o
+front-end com `--target proot`.
+
+## 4b. Instalar em um host Linux (Fase 6)
+
+```sh
+# Verificações do instalador (sem root, sem tocar no sistema):
+bash scripts/host/verify-installer.sh --dest /tmp/kolinos-verify
+
+# Implantar o rootfs em um diretório (com root):
+sudo KOLIN_ASSUME_YES=1 bash install/kolinos-install.sh --target dir \
+     --dest /opt/kolinos output/kolinos-1.0.0-corvo-arm64.tar.xz
+sudo chroot /opt/kolinos /bin/bash -l
+
+# Escrever num dispositivo (Fase 10, destrutivo, exige --force):
+sudo bash install/kolinos-install.sh --target disk --device /dev/sdX1 \
+     --format ext4 --force output/kolinos-1.0.0-corvo-arm64.tar.xz
+```
+
+Após `--target dir`, confira o first boot:
+
+```sh
+grep -qE '^[0-9a-f]{32}$' /opt/kolinos/etc/machine-id && echo "machine-id OK"
+test -f /opt/kolinos/etc/kolinos/firstboot.done && echo "first boot OK"
+```
+
+Detalhes e limites por plataforma em [`docs/PHASE6.md`](PHASE6.md).
 
 ## 5. Testar a ISO
 
