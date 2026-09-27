@@ -38,6 +38,21 @@ check "dpkg operacional"       'dpkg --print-architecture'
 check "apt operacional"        'apt-get --version | head -1'
 check "contagem de pacotes"    'dpkg-query -f ".\n" -W | wc -l'
 check "sources.list"           'grep -c "^deb" /etc/apt/sources.list'
+check "apt tuning aplicado"    'grep -q "Install-Recommends \"false\"" /etc/apt/apt.conf.d/99kolinos && echo ok'
+check "repo KolinOS inativo"   'test -f /etc/apt/sources.list.d/kolinos.sources.disabled && echo ok'
+
+printf '\nBase mínima (FASE 2):\n'
+check "machine-id vazio"       'test ! -s /etc/machine-id && echo vazio'
+check "resolv.conf de runtime" 'grep -q "managed at runtime" /etc/resolv.conf && echo ok'
+check "fstab presente"         'test -f /etc/fstab && echo ok'
+check "locale configurado"     'grep -q "^LANG=" /etc/default/locale && grep "^LANG=" /etc/default/locale'
+check "timezone definido"      'test -e /etc/localtime && echo "$(cat /etc/timezone)"'
+check "copyright preservado"   'test -d /usr/share/doc && ls /usr/share/doc | head -1'
+if kolin_run "$R" 'test -d /usr/share/man && [ -n "$(ls -A /usr/share/man 2>/dev/null)"' >/dev/null 2>&1; then
+    printf '  \033[1;33m•\033[0m modo --full: man pages presentes (esperado)\n'
+else
+    printf '  \033[1;32m✔\033[0m modo slim: man pages removidas\n'
+fi
 
 printf '\nUsuário:\n'
 check "usuário padrão existe"  "id ${KOLIN_DEFAULT_USER}"

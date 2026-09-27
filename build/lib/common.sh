@@ -45,8 +45,9 @@ render_template() {
     while IFS= read -r line; do
         case "$line" in KOLIN*=*) ;; *) continue ;; esac
         key="${line%%=*}"; val="${line#*=}"
-        # Strip an inline comment and surrounding quotes.
-        val="${val%%[ 	]#*}"
+        # Drop an inline comment (needs whitespace before '#') and trim spaces.
+        val="${val%%[[:space:]]#*}"
+        val="${val%"${val##*[![:space:]]}"}"
         val="${val%\"}"; val="${val#\"}"
         sed -i "s|@${key}@|${val}|g" "$out"
     done < <(grep -E '^KOLIN[A-Z_]*=' "$KOLIN_ROOT_DIR/VERSION")
@@ -94,6 +95,52 @@ kolin_ensure_qemu() {
 kolin_remove_qemu() {
     local r="$1"
     rm -f "$r/usr/bin/qemu-aarch64-static"
+}
+
+# Drop documentation / man pages (except copyright) at unpack time so every
+# package installed afterwards stays small. Must run BEFORE debootstrap's
+# second stage. Skipped when KOLIN_SLIM=0 (build.sh --full).
+kolin_apply_slim() {
+    local r="$1"
+    [ "${KOLIN_SLIM:-1}" = 1 ] || { log "modo --full: mantendo docs/man/locales"; return 0; }
+    mkdir -p "$r/etc/dpkg/dpkg.cfg.d"
+    install -m 0644 "$KOLIN_ROOT_DIR/config/dpkg/99kolinos-slim.conf" \
+        "$r/etc/dpkg/dpkg.cfg.d/99kolinos-slim"
+    # The i18n source data (~17 MB) is only needed to *generate* non-C locales.
+    # With the default C.UTF-8 (built into glibc) it is dead weight on a phone.
+    if [ "$KOLIN_LOCALE" = "C.UTF-8" ]; then
+        echo 'path-exclude=/usr/share/i18n/*' >> "$r/etc/dpkg/dpkg.cfg.d/99kolinos-slim"
+    fi
+}
+
+# debootstrap's first stage extracts packages with dpkg-deb directly, bypassing
+# dpkg.cfg.d — so docs/man/locales from the base system survive the unpack-time
+# filter. This sweep removes the leftovers (and any installed before the filter
+# was in place), keeping copyright files. Idempotent; safe to re-run.
+kolin_slim_sweep() {
+    local r="$1"
+    [ "${KOLIN_SLIM:-1}" = 1 ] || return 0
+    local d e
+    rm -rf "$r"/usr/share/man/* "$r"/usr/share/man/.[!.]* 2>/dev/null || true
+    rm -rf "$r"/usr/share/info/* "$r"/usr/share/info/.[!.]* 2>/dev/null || true
+    rm -rf "$r"/usr/share/lintian/* "$r"/usr/share/bug/* 2>/dev/null || true
+    # Locales: keep only C and the alias map.
+    find "$r/usr/share/locale" -mindepth 1 -maxdepth 1 \
+        ! -name C ! -name locale.alias -exec rm -rf {} + 2>/dev/null || true
+    # Documentation: keep directories that carry a copyright file.
+    if [ -d "$r/usr/share/doc" ]; then
+        for d in "$r"/usr/share/doc/*; do
+            [ -e "$d" ] || continue
+            e="$(basename "$d")"
+            case "$e" in .*|copyright) continue ;; esac
+            if [ -d "$d" ] && [ -e "$d/copyright" ]; then continue; fi
+            rm -rf "$d" 2>/dev/null || true
+        done
+    fi
+    # i18n source data: only needed to generate locales other than C.UTF-8.
+    if [ "$KOLIN_LOCALE" = "C.UTF-8" ]; then
+        rm -rf "$r"/usr/share/i18n/* 2>/dev/null || true
+    fi
 }
 
 kolin_chroot() {

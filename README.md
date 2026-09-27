@@ -11,8 +11,8 @@ desenvolvimento, execução dentro do **Termux** usando `proot` (sem root).
 - **Arquitetura principal:** arm64 / aarch64
 - **Gerenciador de pacotes:** APT/DPKG (é Debian por dentro)
 
-> Estado atual: **Fase 1** concluída e a **base** das Fases 2–4 implementada no
-> sistema de build. Veja [`docs/PHASES.md`](docs/PHASES.md) para o roadmap e
+> Estado atual: **Fases 1 e 2** concluídas. Veja [`docs/PHASES.md`](docs/PHASES.md)
+> para o roadmap, [`docs/PHASE2.md`](docs/PHASE2.md) para a base mínima e
 > [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md) para o que funciona (e o que não
 > funciona) em Termux/proot/root.
 
@@ -42,6 +42,16 @@ sudo apt install -y debootstrap qemu-user-static binfmt-support \
 
 sudo bash build.sh            # cria o rootfs arm64 personalizado + ISO
 ```
+
+Flags úteis do `build.sh`:
+
+| Flag | Efeito |
+|---|---|
+| `--slim` / `--full` | base mínima (padrão) ou completa (com man pages/docs) |
+| `--only 20,30,45` | roda só alguns estágios (não recria o rootfs) |
+| `--no-iso` | não gera a ISO ao final |
+| `--force` | recria o rootfs do zero |
+| `--include-source` | embute o código-fonte no rootfs |
 
 Resultado em `output/`:
 

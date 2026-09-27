@@ -17,6 +17,8 @@
 #   --only NAMES       Comma-separated list of stage numbers to run (e.g. 30,40)
 #   --force            Recreate an existing rootfs from scratch
 #   --keep-qemu        Keep the qemu-user-static binary inside the rootfs
+#   --slim / --full    Slim mode (default): drop docs, man pages and non-C
+#                      locales at unpack time. --full keeps them all.
 #   --include-source   Copy the KolinOS source tree into the rootfs docs
 #   -h, --help         Show this help
 
@@ -30,6 +32,7 @@ KOLIN_FORCE=0
 KOLIN_KEEP_QEMU=0
 KOLIN_INCLUDE_SOURCE=0
 KOLIN_NO_ISO=0
+KOLIN_SLIM=1
 KOLIN_ONLY_STAGES=""
 KOLIN_OUTPUT_DIR="$KOLIN_ROOT_DIR/output"
 KOLIN_ROOTFS="$KOLIN_ROOT_DIR/rootfs"
@@ -48,6 +51,8 @@ while [ $# -gt 0 ]; do
         --only)           KOLIN_ONLY_STAGES="$2"; shift 2 ;;
         --force)          KOLIN_FORCE=1; shift ;;
         --keep-qemu)      KOLIN_KEEP_QEMU=1; shift ;;
+        --slim)           KOLIN_SLIM=1; shift ;;
+        --full)           KOLIN_SLIM=0; shift ;;
         --include-source) KOLIN_INCLUDE_SOURCE=1; shift ;;
         --no-iso)         KOLIN_NO_ISO=1; shift ;;
         -h|--help)        usage; exit 0 ;;
@@ -66,7 +71,7 @@ case "$KOLIN_ARCH" in
 esac
 
 export KOLIN_ARCH DEB_ARCH
-export KOLIN_FORCE KOLIN_KEEP_QEMU KOLIN_INCLUDE_SOURCE KOLIN_NO_ISO
+export KOLIN_FORCE KOLIN_KEEP_QEMU KOLIN_INCLUDE_SOURCE KOLIN_NO_ISO KOLIN_SLIM
 export KOLIN_ROOTFS KOLIN_OUTPUT_DIR
 export KOLIN_CODENAME_LOWER
 require_root

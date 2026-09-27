@@ -1,0 +1,10 @@
+# KolinOS own APT repository (Phase 9 — disabled until published).
+# Enable with:
+#   sudo mv /etc/apt/sources.list.d/kolinos.sources.disabled \
+#           /etc/apt/sources.list.d/kolinos.sources
+Types: deb
+URIs: https://repo.kolinos.org/apt
+Suites: @KOLIN_CODENAME_LOWER@
+Components: main
+Architectures: arm64
+Signed-By: /etc/apt/trusted.gpg.d/kolinos.gpg

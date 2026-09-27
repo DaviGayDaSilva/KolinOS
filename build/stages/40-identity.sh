@@ -50,9 +50,7 @@ EOF
         fi
     done
 
-    # --- locale & timezone ------------------------------------------------
-    printf 'LANG=%s\n' "$KOLIN_LOCALE" > "$r/etc/default/locale"
-    printf 'LANG=%s\n' "$KOLIN_LOCALE" > "$r/etc/environment"
+    # --- locale & timezone are handled by 45-system.sh --------------------
     printf '%s\n' "$KOLIN_TIMEZONE" > "$r/etc/timezone"
     if [ -f "$r/usr/share/zoneinfo/$KOLIN_TIMEZONE" ]; then
         ln -sf "/usr/share/zoneinfo/$KOLIN_TIMEZONE" "$r/etc/localtime"

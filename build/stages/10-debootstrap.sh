@@ -16,6 +16,7 @@ stage_main() {
     fi
 
     mkdir -p "$r"
+    kolin_apply_slim "$r"
     local opts=(--variant=minbase --arch="$DEB_ARCH")
     local foreign=0
     if [ "$(uname -m)" != "aarch64" ] && [ "$DEB_ARCH" = "arm64" ]; then

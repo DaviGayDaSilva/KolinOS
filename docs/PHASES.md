@@ -29,15 +29,24 @@ Como testar: `sudo bash build.sh` e depois
 
 ## FASE 2 — RootFS Debian mínimo ✅
 
-**Objetivo:** um Debian arm64 mínimo que já se identifica como KolinOS.
+**Objetivo:** um Debian arm64 mínimo, enxuto e consistente, que já se identifica
+como KolinOS. Detalhes completos em `docs/PHASE2.md`.
 
-O que existe (`10-debootstrap.sh` + `20-apt.sh` + `30-packages.sh`):
+O que existe (`10-debootstrap.sh` + `20-apt.sh` + `30-packages.sh` +
+`45-system.sh`):
 
 - `debootstrap --variant=minbase --arch=arm64` na suíte `trixie`.
-- `sources.list` com `main contrib non-free-firmware` e `-security`.
-- Conjunto base enxuto em `packages/debian.list` (apt, sudo, curl, ssh, nano,
-  htop, …) — escolhido para caber em celular.
-- Tuning de APT para economizar espaço (`Install-Recommends "false"`, etc.).
+- `sources.list` gerado de `config/apt/sources.list.in` e tuning de APT em
+  `config/apt/kolinos-apt.conf` (sem recommends, sem traduções, `Retries 3`).
+- **Modo slim** (padrão, `--full` desativa): `config/dpkg/99kolinos-slim.conf`
+  descarta man/info/locale/lintian/bug no unpack, preservando `copyright`.
+- Conjunto base enxuto em `packages/debian.list`, escolhido para caber em
+  celular.
+- Novo estágio `45-system.sh`: normaliza locale, `fstab`, `machine-id` e
+  `resolv.conf` (nunca vaza o host).
+- Estágios descobertos automaticamente por `NN-*.sh` — nenhuma lista fixa.
+
+Como testar: `sudo bash build.sh && sudo bash scripts/host/verify-rootfs.sh`.
 
 ---
 

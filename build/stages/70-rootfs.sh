@@ -12,7 +12,15 @@ stage_main() {
         rm -f /var/lib/dbus/machine-id 2>/dev/null || true
         : > /etc/machine-id 2>/dev/null || true
         rm -f /etc/ssh/ssh_host_* 2>/dev/null || true
+        rm -f /root/.bash_history /home/*/.bash_history 2>/dev/null || true
+        find /var/log -type f -exec truncate -s 0 {} + 2>/dev/null || true
     ' || warn "algumas limpezas falharam (não fatal)"
+
+    # Never ship the build host's resolver configuration.
+    cat > "$r/etc/resolv.conf" <<'EOF'
+# KolinOS: /etc/resolv.conf is managed at runtime.
+EOF
+    chmod 0644 "$r/etc/resolv.conf"
 
     if [ "$KOLIN_KEEP_QEMU" != 1 ]; then
         kolin_remove_qemu "$r"
