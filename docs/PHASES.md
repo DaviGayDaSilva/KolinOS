@@ -98,18 +98,37 @@ Fora de escopo (fica para depois):
 
 ---
 
-## FASE 5 — Pacotes próprios ⬜
+## FASE 5 — Pacotes próprios ✅
 
-**Objetivo:** criar e empacotar software KolinOS como `.deb`.
+**Objetivo:** criar e empacotar software KolinOS como `.deb`. Detalhes em
+`docs/PHASE5.md`.
 
-Planejado:
+O que existe:
 
-- `packages/custom/` com receitas de build (`dpkg-buildpackage`).
-- Pacotes `kolinos-base`, `kolinos-tools`, `kolinos-branding`.
-- Uso de `debuild`/`sbuild` no host, sem precisar de hardware ARM.
+- Receitas em `packages/custom/`: `kolinos-base` (metapacote),
+  `kolinos-tools` (ferramentas em `/usr/bin`) e `kolinos-branding` (identidade
+  visual em `/etc/kolinos/branding`).
+- `scripts/host/build-deb.sh`: empacota com apenas `dpkg-deb` (sem
+  `debhelper`/`sbuild`), gera `md5sums`/`Installed-Size` e é **reprodutível**
+  (`SOURCE_DATE_EPOCH` + `--root-owner-group`).
+- Novo estágio `35-packages.sh`: constrói os `.deb`, monta um repositório APT
+  local e instala via `apt-get install kolinos-base` — dependências resolvidas
+  de verdade pelo APT, sem rede (`file://`).
+- `tools/apt-kolinos`: liga/desliga o repositório KolinOS no sistema instalado.
+- `repo/scripts/build-repo.sh` endurecido: determinístico, multi-arquitetura e
+  com `Date` em RFC 1123 no `Release`.
+- O antigo caminho manual (`tools/` copiados em `60-postinstall.sh`) foi
+  removido: agora os arquivos pertencem ao dpkg.
+- `--no-custom-debs` permite pular a fase (builds mínimos/sem rede).
 
-Estado atual: a pasta e a integração com o repositório já existem; as receitas
-serão adicionadas nesta fase.
+Como testar: `sudo bash build.sh --only 35` e depois
+`sudo bash scripts/host/verify-rootfs.sh` (bloco "Pacotes próprios").
+
+Fora de escopo (fica para depois):
+
+- Pacotes com código compilado (aí `debhelper`/`sbuild`) e `kolinos-desktop`
+  (FASE 7).
+- Publicação e assinatura do repositório (FASE 9).
 
 ---
 

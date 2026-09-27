@@ -35,6 +35,29 @@ Isso gera, em `output/`:
 | `--only 40,50` | roda só os estágios escolhidos |
 | `--no-iso` | não gera a ISO |
 | `--keep-qemu` | mantém o `qemu-aarch64-static` no rootfs |
+| `--no-custom-debs` | não constrói/instala os pacotes KolinOS `.deb` |
+
+## 1b. Pacotes KolinOS (Fase 5)
+
+O estágio `35-packages.sh` empacota `tools/` e `config/branding/` como `.deb`
+(`kolinos-base`, `kolinos-tools`, `kolinos-branding`), monta um repositório APT
+local e instala via `apt-get`. Para reconstruir só isso:
+
+```sh
+sudo bash build.sh --only 35
+```
+
+Para gerar e inspecionar os `.deb` sem tocar no rootfs:
+
+```sh
+bash scripts/host/build-deb.sh                    # usa a arquitetura de VERSION
+KOLIN_DEB_ARCH=arm64 bash scripts/host/build-deb.sh
+dpkg-deb -I packages/custom/debs/kolinos-base_1.0.0-1_arm64.deb
+dpkg-deb -c packages/custom/debs/kolinos-tools_1.0.0-1_arm64.deb
+```
+
+Cada receita vive em `packages/custom/<nome>/` (`debian/control`,
+`debian/changelog`, `prebuild.sh`). Detalhes e limitações em `docs/PHASE5.md`.
 
 ## 2. Verificar o rootfs
 
@@ -43,7 +66,13 @@ sudo bash scripts/host/verify-rootfs.sh
 ```
 
 Checa identidade (`/etc/os-release`), APT/DPKG, usuário padrão, sudo,
-ferramentas KolinOS. Sai com código de erro se algo falhar.
+ferramentas KolinOS e os pacotes próprios (Fase 5: `dpkg-query`, `dpkg -V`,
+`apt-kolinos`, repositório remoto inativo). Sai com código de erro se algo
+falhar.
+
+> O verificador precisa saber a arquitetura do alvo quando ela difere de
+> `arm64` (ex.: um build de teste amd64):
+> `sudo env KOLIN_ARCH=amd64 DEB_ARCH=amd64 bash scripts/host/verify-rootfs.sh`.
 
 ## 2b. Verificar que o build é reproduzível
 
@@ -122,8 +151,13 @@ sudo bash build.sh --only 70,80 --no-iso
 bash repo/scripts/make-gpg-key.sh
 
 # Coloque .deb em packages/custom/debs/ e indexe:
-bash repo/scripts/build-repo.sh
+bash repo/scripts/build-repo.sh                 # arquitetura de VERSION
+bash repo/scripts/build-repo.sh --arch amd64    # ou escolha a arquitetura
 
 # Sirva localmente:
 cd repo/public && python3 -m http.server 8080
 ```
+
+O repositório é reconstruído do zero a cada execução e só indexa `.deb` da
+arquitetura alvo (mais `Architecture: all`). `--unsigned` é para testes locais;
+o padrão tenta assinar com a chave criada por `make-gpg-key.sh`.

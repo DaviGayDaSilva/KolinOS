@@ -1,0 +1,9 @@
+Package: kolinos-branding
+Architecture: @KOLIN_DEB_ARCH@
+Maintainer: KolinOS <dev@kolinos.org>
+Section: admin
+Priority: optional
+Depends: bash
+Description: KolinOS visual identity assets
+ Logo, colour palette and shell colour helpers used by KolinOS tooling and by
+ its motd. Installed under /etc/kolinos/branding.

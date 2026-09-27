@@ -1,0 +1,48 @@
+# KolinOS — enable the distribution's own APT repository (FASE 5/9).
+#
+# The repo is normally disabled so a fresh KolinOS still works offline or when
+# repo.kolinos.org is unreachable. Turn it on when you actually want to install
+# or update KolinOS packages:
+#
+#   sudo apt-kolinos-enable
+#   sudo apt update
+#   sudo apt install kolinos-base
+#
+# and off again with:
+#
+#   sudo apt-kolinos-disable
+set -euo pipefail
+
+SRC=/etc/apt/sources.list.d
+ACTIVE="$SRC/kolinos.sources"
+DISABLED="$SRC/kolinos.sources.disabled"
+
+case "${1:-enable}" in
+    enable)
+        if [ ! -f "$ACTIVE" ] && [ ! -f "$DISABLED" ]; then
+            echo "apt-kolinos: nenhum arquivo kolinos.sources(.disabled) encontrado" >&2
+            exit 1
+        fi
+        if [ -f "$ACTIVE" ]; then
+            echo "apt-kolinos: já está ativo ($ACTIVE)"
+            exit 0
+        fi
+        mv "$DISABLED" "$ACTIVE"
+        echo "apt-kolinos: repositório ativado. Rode 'sudo apt update'."
+        ;;
+    disable)
+        if [ -f "$ACTIVE" ]; then
+            mv "$ACTIVE" "$DISABLED"
+            echo "apt-kolinos: repositório desativado."
+        else
+            echo "apt-kolinos: já está desativado."
+        fi
+        ;;
+    status)
+        if [ -f "$ACTIVE" ]; then echo "apt-kolinos: ativo"; else echo "apt-kolinos: inativo"; fi
+        ;;
+    *)
+        echo "uso: apt-kolinos [enable|disable|status]" >&2
+        exit 2
+        ;;
+esac

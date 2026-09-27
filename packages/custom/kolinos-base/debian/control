@@ -1,0 +1,10 @@
+Package: kolinos-base
+Architecture: @KOLIN_DEB_ARCH@
+Maintainer: KolinOS <dev@kolinos.org>
+Section: metapackages
+Priority: optional
+Depends: kolinos-tools, kolinos-branding, sudo, ca-certificates, bash-completion
+Description: KolinOS base metapackage
+ Marks a system as KolinOS and pulls the components that make it one: the
+ KolinOS tools, the visual identity and the small set of Debian packages the
+ distribution expects to be present.

@@ -1,0 +1,11 @@
+Package: kolinos-tools
+Architecture: @KOLIN_DEB_ARCH@
+Maintainer: KolinOS <dev@kolinos.org>
+Section: admin
+Priority: optional
+Depends: bash
+Description: KolinOS command-line tools
+ Small utilities shipped by the KolinOS distribution: kolinos-info (a
+ neofetch-style system summary with the KolinOS branding), kolinos-version
+ (name, version and codename) and apt-kolinos (enable or disable the
+ distribution's own APT repository).

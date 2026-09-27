@@ -1,0 +1,5 @@
+kolinos-tools (@KOLIN_VERSION@-1) @KOLIN_CODENAME_LOWER@; urgency=medium
+
+  * Package the bundled KolinOS command-line tools.
+
+ -- KolinOS <dev@kolinos.org>  Thu, 01 Jan 2026 00:00:00 +0000

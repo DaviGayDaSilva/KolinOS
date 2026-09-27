@@ -193,8 +193,25 @@ kolin_slim_sweep() {
 kolin_chroot() {
     local r="$1"; shift
     kolin_ensure_qemu "$r"
-    kolin_mount_pseudo "$r"
     local rc=0
+
+    # Cross-arch normally relies on binfmt_misc: the kernel hands aarch64 ELFs to
+    # qemu automatically. When it is unavailable (read-only /proc in some
+    # containers — the same situation Termux users hit), proot takes over: it
+    # intercepts execve and rewrites the interpreter, so nested execs (bash →
+    # apt → dpkg) work too, which a bare qemu wrapper cannot do. proot's -R
+    # binds /dev, /proc and /sys itself, so the pseudo-filesystems are not
+    # mounted for this path.
+    local cross=0
+    [ "$(uname -m)" != "aarch64" ] && [ "${DEB_ARCH:-${KOLIN_ARCH:-}}" = "arm64" ] && cross=1
+    if [ "$cross" = 1 ] && [ ! -e /proc/sys/fs/binfmt_misc/qemu-aarch64 ]; then
+        have proot || die "cross-arch sem binfmt_misc: instale 'proot' (apt install proot)"
+        log "binfmt_misc indisponível — usando proot + qemu-aarch64-static"
+        proot -R "$r" -q /usr/bin/qemu-aarch64-static -w / "$@" || rc=$?
+        return $rc
+    fi
+
+    kolin_mount_pseudo "$r"
     # shellcheck disable=SC2068
     chroot "$r" "$@" || rc=$?
     kolin_umount_pseudo "$r"

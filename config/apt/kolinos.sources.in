@@ -3,8 +3,8 @@
 #   sudo mv /etc/apt/sources.list.d/kolinos.sources.disabled \
 #           /etc/apt/sources.list.d/kolinos.sources
 Types: deb
-URIs: https://repo.kolinos.org/apt
+URIs: @KOLIN_APT_REPO_URL@
 Suites: @KOLIN_CODENAME_LOWER@
 Components: main
-Architectures: arm64
+Architectures: @KOLIN_DEB_ARCH@
 Signed-By: /etc/apt/trusted.gpg.d/kolinos.gpg

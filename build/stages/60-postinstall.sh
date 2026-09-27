@@ -7,13 +7,9 @@ stage_main() {
     local r="$KOLIN_ROOTFS"
     local dir="$KOLIN_ROOT_DIR/config/postinstall"
 
-    # Deploy bundled KolinOS tools.
-    install -d -m 0755 "$r/usr/local/bin"
-    for tool in "$KOLIN_ROOT_DIR"/tools/*; do
-        [ -f "$tool" ] || continue
-        install -m 0755 "$tool" "$r/usr/local/bin/$(basename "$tool")"
-        log "ferramenta instalada: /usr/local/bin/$(basename "$tool")"
-    done
+    # NOTE: /usr/local/bin tools are owned by the kolinos-tools package now
+    # (stage 35), not copied here — dpkg must be the owner so that
+    # 'apt install --reinstall kolinos-tools' and 'dpkg -V' behave correctly.
 
     shopt -s nullglob
     local hooks=("$dir"/*.sh)

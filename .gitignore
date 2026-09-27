@@ -7,6 +7,9 @@
 /repo/public/
 /repo/keys/
 
+# Pacotes .deb gerados a partir das receitas
+/packages/custom/debs/
+
 # Temporários
 *.tmp
 *.log

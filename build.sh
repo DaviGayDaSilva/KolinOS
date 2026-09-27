@@ -19,6 +19,9 @@
 #   --output DIR       Where to write artifacts (default: ./output)
 #   --rootfs DIR       Rootfs working dir (default: ./rootfs)
 #   --only NAMES       Comma-separated list of stage numbers to run (e.g. 30,40)
+#   --with-custom-debs Build KolinOS's own .deb packages and install them via
+#                      APT (stage 35). On by default.
+#   --no-custom-debs   Skip them, keeping only Debian packages.
 #   --force            Recreate an existing rootfs from scratch
 #   --keep-qemu        Keep the qemu-user-static binary inside the rootfs
 #   --slim / --full    Slim mode (default): drop docs, man pages and non-C
@@ -38,6 +41,7 @@ KOLIN_INCLUDE_SOURCE=0
 KOLIN_NO_ISO=0
 KOLIN_SLIM=1
 KOLIN_ONLY_STAGES=""
+KOLIN_CUSTOM_DEBS=1
 KOLIN_OUTPUT_DIR="$KOLIN_ROOT_DIR/output"
 KOLIN_ROOTFS="$KOLIN_ROOT_DIR/rootfs"
 # Reproducibility overrides (empty = use VERSION).
@@ -48,7 +52,7 @@ KOLIN_SNAPSHOT_HOST="http://snapshot.debian.org"
 
 DEB_ARCH=""
 
-usage() { sed -n '2,27p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; }
+usage() { sed -n '2,31p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; }
 
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -61,6 +65,8 @@ while [ $# -gt 0 ]; do
         --output)         KOLIN_OUTPUT_DIR="$2"; shift 2 ;;
         --rootfs)         KOLIN_ROOTFS="$2"; shift 2 ;;
         --only)           KOLIN_ONLY_STAGES="$2"; shift 2 ;;
+        --with-custom-debs) KOLIN_CUSTOM_DEBS=1; shift ;;
+        --no-custom-debs)   KOLIN_CUSTOM_DEBS=0; shift ;;
         --force)          KOLIN_FORCE=1; shift ;;
         --keep-qemu)      KOLIN_KEEP_QEMU=1; shift ;;
         --slim)           KOLIN_SLIM=1; shift ;;
@@ -83,7 +89,10 @@ case "$KOLIN_ARCH" in
 esac
 
 export KOLIN_ARCH DEB_ARCH
+# Template placeholder for the target architecture (used by config/apt/*.in).
+export KOLIN_DEB_ARCH="$DEB_ARCH"
 export KOLIN_FORCE KOLIN_KEEP_QEMU KOLIN_INCLUDE_SOURCE KOLIN_NO_ISO KOLIN_SLIM
+export KOLIN_CUSTOM_DEBS
 export KOLIN_ROOTFS KOLIN_OUTPUT_DIR
 export KOLIN_CODENAME_LOWER
 export KOLIN_SNAPSHOT KOLIN_SNAPSHOT_HOST
@@ -94,6 +103,11 @@ export KOLIN_BUILD_EPOCH
 
 require_root
 mkdir -p "$KOLIN_OUTPUT_DIR" "$KOLIN_ROOTFS"
+# Normalise to absolute paths: stages cd into the rootfs, so a relative --output
+# or --rootfs would break (e.g. tar writing to a path that no longer resolves).
+KOLIN_OUTPUT_DIR="$(cd "$KOLIN_OUTPUT_DIR" && pwd)"
+KOLIN_ROOTFS="$(cd "$KOLIN_ROOTFS" && pwd)"
+export KOLIN_OUTPUT_DIR KOLIN_ROOTFS
 
 log "KolinOS ${KOLIN_VERSION} (${KOLIN_CODENAME}) — target ${DEB_ARCH}/${KOLIN_DEBIAN_SUITE}"
 log "host: $(uname -m) $(uname -s) — rootfs: $KOLIN_ROOTFS"
@@ -121,6 +135,12 @@ for stage in "${STAGES[@]}"; do
     # shellcheck disable=SC1090
     source "$stage"
     declare -f stage_main >/dev/null || die "stage $name não define stage_main()"
+    # Stage 35 builds KolinOS's own .deb packages; skip it when asked.
+    if [ "$num" = 35 ] && [ "$KOLIN_CUSTOM_DEBS" != 1 ]; then
+        log "pulando $name (--no-custom-debs)"
+        unset -f stage_main
+        continue
+    fi
     stage_main
     unset -f stage_main
 done

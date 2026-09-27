@@ -1,0 +1,5 @@
+kolinos-base (@KOLIN_VERSION@-1) @KOLIN_CODENAME_LOWER@; urgency=medium
+
+  * Initial metapackage for the KolinOS base system.
+
+ -- KolinOS <dev@kolinos.org>  Thu, 01 Jan 2026 00:00:00 +0000

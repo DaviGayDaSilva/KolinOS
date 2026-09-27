@@ -47,7 +47,7 @@ check "logo do corvo"          'grep -q "██████" /etc/kolinos/brandi
 check "tokens de cor"          '. /etc/kolinos/colors.sh; echo "primary=$KOLIN_COLOR_PRIMARY accent=$KOLIN_COLOR_ACCENT"'
 check "kolinos-info completo"  'kolinos-info 2>/dev/null | grep -q "^  Base" && echo ok'
 check "motd com branding"      'grep -q "██████" /etc/motd && echo ok'
-if kolin_run "$R" 'grep -rIl "@KOLIN_" /etc /usr/local/bin /usr/lib/os-release 2>/dev/null | grep -q .' >/dev/null 2>&1; then
+if kolin_run "$R" 'grep -rIl "@KOLIN_" /etc /usr/bin /usr/lib/os-release 2>/dev/null | grep -q .' >/dev/null 2>&1; then
     printf '  \033[1;31m✗\033[0m placeholders @KOLIN_* não renderizados (FALHOU)\n'; fail=1
 else
     printf '  \033[1;32m✔\033[0m nenhum placeholder @KOLIN_* pendente\n'
@@ -70,6 +70,21 @@ printf '\nUsuário:\n'
 check "usuário padrão existe"  "id ${KOLIN_DEFAULT_USER}"
 check "sudo configurado"       "test -f /etc/sudoers.d/90-kolinos && echo ok"
 check "grupo sudo"             "id -nG ${KOLIN_DEFAULT_USER}"
+
+printf '\nPacotes próprios (FASE 5):\n'
+check "kolinos-base instalado"   'dpkg-query -W -f="\${Version} \${Architecture}" kolinos-base'
+check "kolinos-tools instalado"  'dpkg-query -W -f="\${Version} \${Architecture}" kolinos-tools'
+check "kolinos-branding instalado" 'dpkg-query -W -f="\${Version} \${Architecture}" kolinos-branding'
+check "tools pertencem ao dpkg"  'dpkg -S /usr/bin/kolinos-info'
+check "dpkg -V limpo (tools)"    'dpkg -V kolinos-tools && echo ok'
+check "apt-kolinos presente"     'command -v apt-kolinos >/dev/null && apt-kolinos status'
+check "repo remoto desativado"   'test -f /etc/apt/sources.list.d/kolinos.sources.disabled && echo ok'
+# A build-time file:// repo must not leak into the shipped image.
+if kolin_run "$R" 'ls /etc/apt/sources.list.d/*kolinos-build* 2>/dev/null | grep -q .'; then
+    printf '  \033[1;31m✗\033[0m repo de build vazou para o rootfs (FALHOU)\n'; fail=1
+else
+    printf '  \033[1;32m✔\033[0m repo de build removido do rootfs\n'
+fi
 
 printf '\nArquitetura esperada: %s\n\n' "$KOLIN_ARCH"
 if [ "$fail" -ne 0 ]; then die "verificação encontrou falhas"; fi

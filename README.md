@@ -11,10 +11,11 @@ desenvolvimento, execução dentro do **Termux** usando `proot` (sem root).
 - **Arquitetura principal:** arm64 / aarch64
 - **Gerenciador de pacotes:** APT/DPKG (é Debian por dentro)
 
-> Estado atual: **Fases 1, 2, 3 e 4** concluídas. Veja [`docs/PHASES.md`](docs/PHASES.md)
+> Estado atual: **Fases 1, 2, 3, 4 e 5** concluídas. Veja [`docs/PHASES.md`](docs/PHASES.md)
 > para o roadmap, [`docs/PHASE2.md`](docs/PHASE2.md) (base mínima),
-> [`docs/PHASE3.md`](docs/PHASE3.md) (identidade visual) e
-> [`docs/PHASE4.md`](docs/PHASE4.md) (build reproduzível), além de
+> [`docs/PHASE3.md`](docs/PHASE3.md) (identidade visual),
+> [`docs/PHASE4.md`](docs/PHASE4.md) (build reproduzível),
+> [`docs/PHASE5.md`](docs/PHASE5.md) (pacotes próprios `.deb`), além de
 > [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md) para o que funciona (e o que não
 > funciona) em Termux/proot/root.
 
@@ -56,6 +57,7 @@ Flags úteis do `build.sh`:
 | `--include-source` | embute o código-fonte no rootfs |
 | `--snapshot STAMP` | fixa as versões Debian no `snapshot.debian.org` |
 | `--reproducible` | build bit-a-bit reprodutível (usa a data de `VERSION`) |
+| `--no-custom-debs` | não constrói/instala os pacotes KolinOS (Fase 5) |
 
 Resultado em `output/`:
 
@@ -84,6 +86,7 @@ kolinos/
 │       ├── 10-debootstrap.sh
 │       ├── 20-apt.sh
 │       ├── 30-packages.sh
+│       ├── 35-packages.sh        # pacotes KolinOS (.deb) via APT (Fase 5)
 │       ├── 40-identity.sh
 │       ├── 50-users.sh
 │       ├── 60-postinstall.sh
@@ -99,14 +102,18 @@ kolinos/
 │   └── postinstall/         # hooks executados dentro do rootfs
 ├── packages/
 │   ├── debian.list          # pacotes Debian do sistema base
-│   └── custom/              # pacotes próprios (Fase 5) + debs/
+│   └── custom/              # receitas dos pacotes KolinOS (Fase 5)
+│       ├── kolinos-base/    #   metapacote
+│       ├── kolinos-tools/   #   ferramentas em /usr/bin
+│       ├── kolinos-branding/#   identidade visual
+│       └── debs/            #   .deb gerados (não versionado)
 ├── repo/                    # repositório APT próprio (Fase 9, groundwork)
 │   ├── scripts/             # build-repo.sh, make-gpg-key.sh
 │   └── conf/
-├── tools/                   # ferramentas KolinOS instaladas em /usr/local/bin
+├── tools/                   # ferramentas KolinOS (viram o pacote kolinos-tools)
 ├── scripts/
 │   ├── termux/install.sh    # instala o rootfs no Termux (proot-distro v4/v5)
-│   ├── host/                # enter.sh, verify-rootfs.sh (host Linux)
+│   ├── host/                # enter.sh, verify-rootfs.sh, build-deb.sh
 │   └── artifacts/           # make-iso.sh, make-source-zip.sh
 ├── docs/                    # documentação detalhada
 ├── rootfs/                  # rootfs em construção (gerado; não versionado)
@@ -128,13 +135,15 @@ por exemplo.
 3. `20-apt.sh` escreve `sources.list`, tuning de APT e o repositório KolinOS
    (desabilitado).
 4. `30-packages.sh` instala o conjunto de pacotes de `packages/debian.list`.
-5. `40-identity.sh` aplica nome, versão, `/etc/os-release`, motd, hostname,
+5. `35-packages.sh` empacota o software KolinOS em `.deb`, monta um repositório
+   APT local e instala `kolinos-base` via `apt-get` (Fase 5).
+6. `40-identity.sh` aplica nome, versão, `/etc/os-release`, motd, hostname,
    prompt e timezone.
-6. `50-users.sh` cria o usuário padrão (`kolin`) com sudo.
-7. `60-postinstall.sh` copia as ferramentas e roda os hooks de pós-instalação.
-8. `70-rootfs.sh` limpa e empacota o rootfs em `.tar.xz`.
-9. `80-metadata.sh` grava checksums e metadados.
-10. `build.sh` gera a ISO carrier com `xorriso`.
+7. `50-users.sh` cria o usuário padrão (`kolin`) com sudo.
+8. `60-postinstall.sh` roda os hooks de pós-instalação.
+9. `70-rootfs.sh` limpa e empacota o rootfs em `.tar.xz`.
+10. `80-metadata.sh` grava checksums e metadados.
+11. `build.sh` gera a ISO carrier com `xorriso`.
 
 Opções úteis: `--arch`, `--suite`, `--mirror`, `--snapshot`, `--reproducible`,
 `--epoch`, `--rootfs`, `--output`, `--force`, `--only`, `--no-iso`,
@@ -148,6 +157,7 @@ Opções úteis: `--arch`, `--suite`, `--mirror`, `--snapshot`, `--reproducible`
 - [`docs/PHASE2.md`](docs/PHASE2.md) — a base mínima (modo slim, locale, higiene).
 - [`docs/PHASE3.md`](docs/PHASE3.md) — identidade visual, paleta e ferramentas.
 - [`docs/PHASE4.md`](docs/PHASE4.md) — build reproduzível (snapshot, epoch, teste).
+- [`docs/PHASE5.md`](docs/PHASE5.md) — pacotes próprios `.deb` e repositório APT.
 - [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md) — Termux vs proot vs root vs kernel.
 - [`docs/BUILD.md`](docs/BUILD.md) — construir, testar e entrar no sistema.
 

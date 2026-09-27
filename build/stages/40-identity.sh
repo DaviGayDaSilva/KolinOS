@@ -17,12 +17,20 @@ EOF
     render_template "$KOLIN_ROOT_DIR/config/os-release.in" "$r/etc/os-release"
     render_template "$KOLIN_ROOT_DIR/config/os-release.in" "$r/usr/lib/os-release"
     render_template "$KOLIN_ROOT_DIR/config/motd/00-header" "$r/etc/motd"
+
+    # Branding assets belong to the kolinos-branding package (stage 35) and are
+    # installed by dpkg. Only lay them down by hand when that package is absent
+    # (a --no-custom-debs build), so the package stays the single owner of these
+    # paths and 'dpkg -V' sees files it actually shipped.
     install -d -m 0755 "$r/etc/kolinos/branding"
-    cp "$KOLIN_ROOT_DIR/config/branding/logo.txt" "$r/etc/kolinos/branding/logo.txt"
-    cp "$KOLIN_ROOT_DIR/config/branding/logo-small.txt" "$r/etc/kolinos/branding/logo-small.txt"
-    cp "$KOLIN_ROOT_DIR/config/branding/palette.txt" "$r/etc/kolinos/branding/palette.txt"
-    render_template "$KOLIN_ROOT_DIR/config/branding/colors.sh.in" "$r/etc/kolinos/colors.sh"
-    chmod 0644 "$r/etc/kolinos/colors.sh"
+    if ! kolin_run "$r" 'dpkg-query -W kolinos-branding >/dev/null 2>&1'; then
+        warn "kolinos-branding ausente — instalando branding manualmente"
+        cp "$KOLIN_ROOT_DIR/config/branding/logo.txt" "$r/etc/kolinos/branding/logo.txt"
+        cp "$KOLIN_ROOT_DIR/config/branding/logo-small.txt" "$r/etc/kolinos/branding/logo-small.txt"
+        cp "$KOLIN_ROOT_DIR/config/branding/palette.txt" "$r/etc/kolinos/branding/palette.txt"
+        render_template "$KOLIN_ROOT_DIR/config/branding/colors.sh.in" "$r/etc/kolinos/colors.sh"
+        chmod 0644 "$r/etc/kolinos/colors.sh"
+    fi
     {
         echo "NAME=${KOLIN_NAME}"
         echo "VERSION=${KOLIN_VERSION}"
