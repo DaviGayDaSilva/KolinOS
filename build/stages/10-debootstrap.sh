@@ -24,7 +24,8 @@ stage_main() {
     fi
 
     log "debootstrap ${DEB_ARCH}/${KOLIN_DEBIAN_SUITE} em $r ..."
-    debootstrap "${opts[@]}" "$KOLIN_DEBIAN_SUITE" "$r" "$KOLIN_DEBIAN_MIRROR"
+    debootstrap "${opts[@]}" "$KOLIN_DEBIAN_SUITE" "$r" \
+        "$(kolin_effective_mirror "$KOLIN_DEBIAN_MIRROR")"
 
     if [ "$foreign" = 1 ]; then
         log "segundo estágio via QEMU (cross-arch)"

@@ -35,6 +35,41 @@ require_root() {
 have() { command -v "$1" >/dev/null 2>&1; }
 
 # ---------------------------------------------------------------------------
+# Reproducibility (FASE 4).
+#
+# kolin_effective_mirror resolves the Debian mirror to use for this build: the
+# fixed snapshot when KOLIN_SNAPSHOT is set, otherwise the plain mirror. It is
+# rendered into apt sources and passed to debootstrap.
+# ---------------------------------------------------------------------------
+kolin_effective_mirror() { # <base-mirror> -> snapshot URL or base mirror
+    local base="$1"
+    if [ -n "${KOLIN_SNAPSHOT:-}" ]; then
+        case "$base" in
+            *debian-security*) printf '%s/archive/debian-security/%s' "$KOLIN_SNAPSHOT_HOST" "$KOLIN_SNAPSHOT" ;;
+            *)                 printf '%s/archive/debian/%s'          "$KOLIN_SNAPSHOT_HOST" "$KOLIN_SNAPSHOT" ;;
+        esac
+    else
+        printf '%s' "$base"
+    fi
+}
+
+# kolin_build_epoch prints a stable Unix timestamp for this build. It is the
+# author date of HEAD, not the current clock, so a rebuild of the same commit
+# produces byte-identical archives even hours apart. NOTE: it stays stable until
+# you commit again — a dirty tree does not change it. Override with
+# KOLIN_BUILD_EPOCH for a fully frozen, checked-in value.
+kolin_build_epoch() {
+    local e="${KOLIN_BUILD_EPOCH:-}"
+    if [ -z "$e" ]; then
+        e="$(git -C "$KOLIN_ROOT_DIR" log -1 --format=%ct 2>/dev/null || true)"
+    fi
+    [ -n "$e" ] || e="$(date -u +%s)"
+    printf '%s' "$e"
+}
+
+kolin_iso_utc() { date -u -d "@$1" +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u +%Y-%m-%dT%H:%M:%SZ; }
+
+# ---------------------------------------------------------------------------
 # Templating: replace @KOLIN_*@ placeholders with values from VERSION.
 # ---------------------------------------------------------------------------
 render_template() {
@@ -51,6 +86,12 @@ render_template() {
         val="${val%\"}"; val="${val#\"}"
         sed -i "s|@${key}@|${val}|g" "$out"
     done < <(grep -E '^KOLIN[A-Z_]*=' "$KOLIN_ROOT_DIR/VERSION")
+    # Values computed at build time (e.g. the snapshot mirror) are exported as
+    # KOLIN_* in the environment rather than living in VERSION.
+    while IFS='=' read -r key val; do
+        [ -n "$key" ] || continue
+        sed -i "s|@${key}@|${val}|g" "$out"
+    done < <(env | grep -E '^KOLIN[A-Z_]*=')
     sed -i "s|@KOLIN_CODENAME_LOWER@|${KOLIN_CODENAME_LOWER}|g" "$out"
 }
 
@@ -97,6 +138,17 @@ kolin_remove_qemu() {
     rm -f "$r/usr/bin/qemu-aarch64-static"
 }
 
+# ---------------------------------------------------------------------------
+# Reproducibility: stamp every file in the tree with one fixed timestamp so tar
+# entries, dpkg's installed-mtime and the build metadata all agree, instead of
+# carrying the wall clock. Requires root (chown/mknod on /dev nodes).
+# ---------------------------------------------------------------------------
+kolin_stamp_tree() {
+    local r="$1" epoch="$2"
+    find "$r" -xdev -exec touch -h -d "@$epoch" {} + 2>/dev/null || \
+        warn "normalização de mtime falhou em alguns caminhos"
+}
+
 # Drop documentation / man pages (except copyright) at unpack time so every
 # package installed afterwards stays small. Must run BEFORE debootstrap's
 # second stage. Skipped when KOLIN_SLIM=0 (build.sh --full).
@@ -106,11 +158,6 @@ kolin_apply_slim() {
     mkdir -p "$r/etc/dpkg/dpkg.cfg.d"
     install -m 0644 "$KOLIN_ROOT_DIR/config/dpkg/99kolinos-slim.conf" \
         "$r/etc/dpkg/dpkg.cfg.d/99kolinos-slim"
-    # The i18n source data (~17 MB) is only needed to *generate* non-C locales.
-    # With the default C.UTF-8 (built into glibc) it is dead weight on a phone.
-    if [ "$KOLIN_LOCALE" = "C.UTF-8" ]; then
-        echo 'path-exclude=/usr/share/i18n/*' >> "$r/etc/dpkg/dpkg.cfg.d/99kolinos-slim"
-    fi
 }
 
 # debootstrap's first stage extracts packages with dpkg-deb directly, bypassing

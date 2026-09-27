@@ -26,6 +26,9 @@ Isso gera, em `output/`:
 | `--arch arm64` | alvo (também aceita `amd64`) |
 | `--suite trixie` | suíte Debian |
 | `--mirror URL` | espelho Debian |
+| `--snapshot STAMP` | fixa pacotes no `snapshot.debian.org` (ex.: `20250901T000000Z`) |
+| `--reproducible` | atalho: usa a data fixada em `VERSION` como snapshot |
+| `--epoch EPOCH` | timestamp Unix fixo p/ todos os artefatos (reprodutível) |
 | `--rootfs DIR` | onde construir o rootfs |
 | `--output DIR` | onde gravar artefatos |
 | `--force` | recria o rootfs do zero |
@@ -41,6 +44,15 @@ sudo bash scripts/host/verify-rootfs.sh
 
 Checa identidade (`/etc/os-release`), APT/DPKG, usuário padrão, sudo,
 ferramentas KolinOS. Sai com código de erro se algo falhar.
+
+## 2b. Verificar que o build é reproduzível
+
+```sh
+sudo bash scripts/host/verify-reproducible.sh --snapshot 20250901T000000Z
+```
+
+Constrói o rootfs **duas vezes** com o mesmo epoch e compara o SHA-256. Se os
+dois arquivos forem idênticos, o build é reprodutível. Veja `docs/PHASE4.md`.
 
 ## 3. Entrar no rootfs (host Linux, com root)
 

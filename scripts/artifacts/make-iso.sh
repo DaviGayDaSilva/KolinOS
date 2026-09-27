@@ -21,6 +21,12 @@ OUT="$(cd "$OUT" && pwd)"
 STAGE="$(mktemp -d "${TMPDIR:-/tmp}/kolinos-iso.XXXXXX")"
 trap 'rm -rf "$STAGE"' EXIT
 
+# Reproducible builds: reuse the rootfs epoch (git commit date) for the ISO
+# filesystem, volume dates and manifest, so the ISO is stable across rebuilds.
+EPOCH="${KOLIN_BUILD_EPOCH:-$(git -C "$ROOT" log -1 --format=%ct 2>/dev/null || date -u +%s)}"
+ISO_DATE="$(date -u -d "@$EPOCH" +%Y%m%d%H%M%S00 2>/dev/null || date -u +%Y%m%d%H%M%S00)"
+BUILD_DATE="$(date -u -d "@$EPOCH" +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u +%Y-%m-%dT%H:%M:%SZ)"
+
 log() { printf '[iso] %s\n' "$*"; }
 die() { printf '[iso][erro] %s\n' "$*" >&2; exit 1; }
 
@@ -52,7 +58,7 @@ KOLIN_CODENAME=$KOLIN_CODENAME
 KOLIN_ARCH=$KOLIN_ARCH
 ROOTFS_FILE=rootfs/$(basename "$TARBALL")
 ROOTFS_SHA256=$SUM
-BUILD_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+BUILD_DATE=$BUILD_DATE
 EOF
 
 cat > "$STAGE/README.txt" <<EOF
@@ -87,6 +93,7 @@ xorriso -as mkisofs \
     -volid "$VOL" \
     -publisher "KolinOS" \
     -preparer "KolinOS build system" \
+    --set_all_file_dates "$ISO_DATE" \
     -o "$ISO" "$STAGE" >/dev/null
 
 ( cd "$OUT" && sha256sum "$(basename "$ISO")" >> SHA256SUMS )

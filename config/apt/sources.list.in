@@ -1,4 +1,4 @@
 # KolinOS — Debian base repositories (rendered by stage 20).
-deb @KOLIN_DEBIAN_MIRROR@ @KOLIN_DEBIAN_SUITE@ main contrib non-free-firmware
-deb @KOLIN_DEBIAN_MIRROR@ @KOLIN_DEBIAN_SUITE@-updates main contrib non-free-firmware
-deb @KOLIN_DEBIAN_SECURITY@ @KOLIN_DEBIAN_SUITE@-security main contrib non-free-firmware
+deb @KOLIN_APT_SNAPSHOT_OPT@@KOLIN_APT_MAIN_MIRROR@ @KOLIN_DEBIAN_SUITE@ main contrib non-free-firmware
+deb @KOLIN_APT_SNAPSHOT_OPT@@KOLIN_APT_MAIN_MIRROR@ @KOLIN_DEBIAN_SUITE@-updates main contrib non-free-firmware
+deb @KOLIN_APT_SNAPSHOT_OPT@@KOLIN_APT_SEC_MIRROR@ @KOLIN_DEBIAN_SUITE@-security main contrib non-free-firmware

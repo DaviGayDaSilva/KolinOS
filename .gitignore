@@ -11,3 +11,6 @@
 *.tmp
 *.log
 .DS_Store
+
+# Logs diversos
+wget-log*

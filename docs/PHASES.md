@@ -72,21 +72,28 @@ Pendente (FASE 7, gráfica): logo/wallpaper em imagem, tema de desktop, ícones.
 
 ---
 
-## FASE 4 — Build reproduzível 🟡
+## FASE 4 — Build reproduzível ✅
 
-**Objetivo:** o mesmo comando produz o mesmo resultado, de forma consistente.
+**Objetivo:** o mesmo commit produz o mesmo artefato, byte a byte.
 
 O que existe:
 
-- Build modular por estágios independentes e reexecutáveis.
-- Identidade centralizada em `VERSION` (fonte única).
-- Metadados e checksums gerados automaticamente (`80-metadata.sh`).
-- `.gitignore` mantém `rootfs/` e `output/` fora do controle de versão.
+- Snapshot Debian opcional (`--snapshot` / `--reproducible`): espelhos viram
+  `snapshot.debian.org` no carimbo escolhido, então as versões de pacote não
+  mudam entre builds.
+- Epoch fixo (`KOLIN_BUILD_EPOCH`, padrão = data do commit `HEAD`) aplicado em
+  todos os mtimes, no `tar`, no ISO, no `METADATA.txt` e no `MANIFEST`.
+- Empacotamento determinístico: ordem `LC_ALL=C`, `--owner/--group 0`,
+  formato `pax` sem `atime`/`ctime` (que faziam o hash mudar a cada leitura).
+- ISO reprodutível (`--set_all_file_dates`) e ZIP de fontes com mtime fixo.
+- Teste de aceitação `scripts/host/verify-reproducible.sh`, que constrói duas
+  vezes e compara o SHA-256.
+- `path-exclude` para arquivos-skeleton do dpkg (`/etc/default/rcS`).
 
-Falta ainda:
+Detalhes: `docs/PHASE4.md`.
 
-- Fixar versões (snapshot Debian via `snapshot.debian.org`) para builds
-  bit-a-bit reprodutíveis.
+Fora de escopo (fica para depois):
+
 - Build em container/CI (GitHub Actions com cache).
 
 ---

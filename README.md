@@ -11,9 +11,10 @@ desenvolvimento, execução dentro do **Termux** usando `proot` (sem root).
 - **Arquitetura principal:** arm64 / aarch64
 - **Gerenciador de pacotes:** APT/DPKG (é Debian por dentro)
 
-> Estado atual: **Fases 1, 2 e 3** concluídas. Veja [`docs/PHASES.md`](docs/PHASES.md)
-> para o roadmap, [`docs/PHASE2.md`](docs/PHASE2.md) (base mínima) e
-> [`docs/PHASE3.md`](docs/PHASE3.md) (identidade visual), além de
+> Estado atual: **Fases 1, 2, 3 e 4** concluídas. Veja [`docs/PHASES.md`](docs/PHASES.md)
+> para o roadmap, [`docs/PHASE2.md`](docs/PHASE2.md) (base mínima),
+> [`docs/PHASE3.md`](docs/PHASE3.md) (identidade visual) e
+> [`docs/PHASE4.md`](docs/PHASE4.md) (build reproduzível), além de
 > [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md) para o que funciona (e o que não
 > funciona) em Termux/proot/root.
 
@@ -53,6 +54,8 @@ Flags úteis do `build.sh`:
 | `--no-iso` | não gera a ISO ao final |
 | `--force` | recria o rootfs do zero |
 | `--include-source` | embute o código-fonte no rootfs |
+| `--snapshot STAMP` | fixa as versões Debian no `snapshot.debian.org` |
+| `--reproducible` | build bit-a-bit reprodutível (usa a data de `VERSION`) |
 
 Resultado em `output/`:
 
@@ -133,8 +136,9 @@ por exemplo.
 9. `80-metadata.sh` grava checksums e metadados.
 10. `build.sh` gera a ISO carrier com `xorriso`.
 
-Opções úteis: `--arch`, `--suite`, `--mirror`, `--rootfs`, `--output`,
-`--force`, `--only`, `--no-iso`, `--keep-qemu`, `--include-source`.
+Opções úteis: `--arch`, `--suite`, `--mirror`, `--snapshot`, `--reproducible`,
+`--epoch`, `--rootfs`, `--output`, `--force`, `--only`, `--no-iso`,
+`--keep-qemu`, `--include-source`.
 
 ---
 
@@ -143,6 +147,7 @@ Opções úteis: `--arch`, `--suite`, `--mirror`, `--rootfs`, `--output`,
 - [`docs/PHASES.md`](docs/PHASES.md) — as 10 fases, com o que já existe.
 - [`docs/PHASE2.md`](docs/PHASE2.md) — a base mínima (modo slim, locale, higiene).
 - [`docs/PHASE3.md`](docs/PHASE3.md) — identidade visual, paleta e ferramentas.
+- [`docs/PHASE4.md`](docs/PHASE4.md) — build reproduzível (snapshot, epoch, teste).
 - [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md) — Termux vs proot vs root vs kernel.
 - [`docs/BUILD.md`](docs/BUILD.md) — construir, testar e entrar no sistema.
 

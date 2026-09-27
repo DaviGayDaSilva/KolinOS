@@ -16,7 +16,13 @@ stage_main() {
         echo "debian suite  : ${KOLIN_DEBIAN_SUITE}"
         echo "architecture  : ${KOLIN_ARCH} (${DEB_ARCH})"
         echo "built on      : $(uname -srm)"
-        echo "build date    : $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+        echo "build epoch   : ${KOLIN_BUILD_EPOCH}"
+        echo "build date    : $(kolin_iso_utc "$KOLIN_BUILD_EPOCH")"
+        if [ -n "${KOLIN_SNAPSHOT:-}" ]; then
+            echo "snapshot      : ${KOLIN_SNAPSHOT} (reprodutível)"
+        else
+            echo "snapshot      : nenhum (mirror ao vivo — build não reprodutível)"
+        fi
         echo "git commit    : $(git -C "$KOLIN_ROOT_DIR" rev-parse --short HEAD 2>/dev/null || echo n/a)"
         echo
         echo "Artifacts:"
@@ -32,7 +38,7 @@ stage_main() {
     } > "$meta"
 
     log "checksums (sha256):"
-    ( cd "$out" && sha256sum ./*.tar.* ./*.iso 2>/dev/null | tee SHA256SUMS ) || true
+    ( cd "$out" && rm -f SHA256SUMS && sha256sum ./*.tar.* ./*.iso 2>/dev/null | tee SHA256SUMS ) || true
 
     log "metadados escritos em $meta"
 }

@@ -12,6 +12,16 @@ KOLIN_DEBIAN_SUITE="trixie"       # Debian 13
 KOLIN_DEBIAN_MIRROR="http://deb.debian.org/debian"
 KOLIN_DEBIAN_SECURITY="http://deb.debian.org/debian-security"
 
+# Reproducible builds (FASE 4).
+# When KOLIN_SNAPSHOT is set, debootstrap and APT fetch packages from that fixed
+# snapshot.debian.org timestamp instead of the moving mirror, so the same commit
+# yields the same package versions. Format: YYYYMMDDTHHMMSSZ. Empty = live mirror.
+KOLIN_SNAPSHOT=""
+# Fixed timestamp (Unix epoch) for every tar entry, file mtime and manifest
+# date, so artifacts do not embed the wall clock. Empty = resolved at build time
+# from the git commit date of HEAD (fallback: current time).
+KOLIN_BUILD_EPOCH=""
+
 KOLIN_ARCH="arm64"
 
 # Homepage / identity URLs (placeholders until the APT repo exists — Phase 9).

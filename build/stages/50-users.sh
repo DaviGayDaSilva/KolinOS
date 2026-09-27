@@ -21,8 +21,14 @@ stage_main() {
         fi
     fi
 
-    # Set (or reset) the documented default password.
-    kolin_run "$r" "echo '$u:${KOLIN_DEFAULT_PASSWORD}' | chpasswd"
+    # Set (or reset) the documented default password with a FIXED salt.
+    # chpasswd would pick a random salt, and the salt lands in /etc/shadow —
+    # a variable byte that breaks reproducible builds. The hash algorithm must
+    # match what `passwd` on the target will later consider valid.
+    local hash
+    hash="$(openssl passwd -6 -salt kolinos "${KOLIN_DEFAULT_PASSWORD}")"
+    [ -n "$hash" ] || die "falha ao gerar o hash da senha (openssl)"
+    kolin_run "$r" "usermod -p '$hash' '$u'"
 
     # Passwordless sudo for the default user — convenient in proot, and easy to
     # audit. Remove /etc/sudoers.d/90-kolinos on hardened installs.

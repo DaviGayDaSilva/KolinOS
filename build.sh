@@ -12,6 +12,10 @@
 #   --arch ARCH        Target Debian architecture (default: arm64)
 #   --suite SUITE      Debian suite (default: trixie)
 #   --mirror URL       Debian mirror (default: http://deb.debian.org/debian)
+#   --snapshot STAMP   Pin packages to snapshot.debian.org at STAMP
+#                      (YYYYMMDDTHHMMSSZ) for a reproducible build
+#   --reproducible     Shortcut for --snapshot on the pinned date in VERSION
+#   --epoch EPOCH      Fixed Unix timestamp for archives/manifests (reproducible)
 #   --output DIR       Where to write artifacts (default: ./output)
 #   --rootfs DIR       Rootfs working dir (default: ./rootfs)
 #   --only NAMES       Comma-separated list of stage numbers to run (e.g. 30,40)
@@ -36,16 +40,24 @@ KOLIN_SLIM=1
 KOLIN_ONLY_STAGES=""
 KOLIN_OUTPUT_DIR="$KOLIN_ROOT_DIR/output"
 KOLIN_ROOTFS="$KOLIN_ROOT_DIR/rootfs"
+# Reproducibility overrides (empty = use VERSION).
+KOLIN_SNAPSHOT="${KOLIN_SNAPSHOT:-}"
+KOLIN_BUILD_EPOCH="${KOLIN_BUILD_EPOCH:-}"
+# Where snapshot.debian.org lives; kept in one place so a mirror can replace it.
+KOLIN_SNAPSHOT_HOST="http://snapshot.debian.org"
 
 DEB_ARCH=""
 
-usage() { sed -n '2,25p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; }
+usage() { sed -n '2,27p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; }
 
 while [ $# -gt 0 ]; do
     case "$1" in
         --arch)           KOLIN_ARCH="$2"; shift 2 ;;
         --suite)          KOLIN_DEBIAN_SUITE="$2"; shift 2 ;;
         --mirror)         KOLIN_DEBIAN_MIRROR="$2"; shift 2 ;;
+        --snapshot)       KOLIN_SNAPSHOT="$2"; shift 2 ;;
+        --reproducible)   KOLIN_SNAPSHOT="${KOLIN_SNAPSHOT:-20250901T000000Z}"; shift ;;
+        --epoch)          KOLIN_BUILD_EPOCH="$2"; shift 2 ;;
         --output)         KOLIN_OUTPUT_DIR="$2"; shift 2 ;;
         --rootfs)         KOLIN_ROOTFS="$2"; shift 2 ;;
         --only)           KOLIN_ONLY_STAGES="$2"; shift 2 ;;
@@ -74,11 +86,23 @@ export KOLIN_ARCH DEB_ARCH
 export KOLIN_FORCE KOLIN_KEEP_QEMU KOLIN_INCLUDE_SOURCE KOLIN_NO_ISO KOLIN_SLIM
 export KOLIN_ROOTFS KOLIN_OUTPUT_DIR
 export KOLIN_CODENAME_LOWER
+export KOLIN_SNAPSHOT KOLIN_SNAPSHOT_HOST
+
+# Resolve the fixed build timestamp once, before any artifact is written.
+KOLIN_BUILD_EPOCH="$(kolin_build_epoch)"
+export KOLIN_BUILD_EPOCH
+
 require_root
 mkdir -p "$KOLIN_OUTPUT_DIR" "$KOLIN_ROOTFS"
 
 log "KolinOS ${KOLIN_VERSION} (${KOLIN_CODENAME}) — target ${DEB_ARCH}/${KOLIN_DEBIAN_SUITE}"
 log "host: $(uname -m) $(uname -s) — rootfs: $KOLIN_ROOTFS"
+log "build epoch: $KOLIN_BUILD_EPOCH ($(kolin_iso_utc "$KOLIN_BUILD_EPOCH"))"
+if [ -n "$KOLIN_SNAPSHOT" ]; then
+    log "snapshot Debian: $KOLIN_SNAPSHOT (build reprodutível)"
+else
+    log "mirror ao vivo (sem snapshot): o resultado pode variar entre builds"
+fi
 
 mapfile -t STAGES < <(find "$SELF_DIR/build/stages" -maxdepth 1 -name '[0-9][0-9]-*.sh' | sort)
 [ "${#STAGES[@]}" -gt 0 ] || die "nenhum estágio encontrado em build/stages/"

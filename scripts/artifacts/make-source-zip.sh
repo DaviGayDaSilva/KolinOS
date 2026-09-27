@@ -34,8 +34,12 @@ tar -C "$ROOT" \
     -cf - . | tar -C "$STAGE/$NAME" -xf -
 
 rm -f "$ZIP"
-( cd "$STAGE" && zip -qr "$ZIP" "$NAME" )
+# Reproducible: fixed mtimes inside the ZIP as well (source archives too).
+STAMP="${KOLIN_BUILD_EPOCH:-$(git -C "$ROOT" log -1 --format=%ct 2>/dev/null || date -u +%s)}"
+find "$STAGE" -exec touch -h -d "@$STAMP" {} + 2>/dev/null || true
+( cd "$STAGE" && zip -qr -X "$ZIP" "$NAME" )
 SUM="$(sha256sum "$ZIP" | awk '{print $1}')"
+: > "$OUT/SOURCE-SHA256SUMS"
 echo "$SUM  $(basename "$ZIP")" >> "$OUT/SOURCE-SHA256SUMS"
 echo "[zip] $ZIP ($(du -h "$ZIP" | awk '{print $1}'))"
 echo "[zip] sha256: $SUM"

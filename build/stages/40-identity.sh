@@ -29,7 +29,7 @@ EOF
         echo "CODENAME=${KOLIN_CODENAME}"
         echo "DEBIAN_SUITE=${KOLIN_DEBIAN_SUITE}"
         echo "ARCH=${KOLIN_ARCH}"
-        echo "BUILD_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+        echo "BUILD_DATE=$(kolin_iso_utc "$KOLIN_BUILD_EPOCH")"
     } > "$r/etc/kolinos/version"
 
     render_template "$KOLIN_ROOT_DIR/config/issue" "$r/etc/issue"
