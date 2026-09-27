@@ -1,0 +1,94 @@
+#!/usr/bin/env bash
+# make-iso.sh — assemble the distributable KolinOS ISO.
+#
+# This ISO is a DATA/CARRIER image: it contains the personalized ARM64 rootfs
+# archive plus this project's source and the Termux installer. It is NOT a
+# bootable operating-system image — it has no kernel and no bootloader.
+# A bootable install medium is a Phase-10 deliverable (needs a real kernel and
+# bootloader support).
+#
+# Usage: make-iso.sh [OUTPUT_DIR]   (default: ./output)
+set -euo pipefail
+
+SHORT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT="$(cd "$SHORT_DIR/../.." && pwd)"
+# shellcheck source=../../VERSION
+source "$ROOT/VERSION"
+KOLIN_CODENAME_LOWER="$(printf '%s' "$KOLIN_CODENAME" | tr '[:upper:]' '[:lower:]')"
+OUT="${1:-$ROOT/output}"
+mkdir -p "$OUT"
+OUT="$(cd "$OUT" && pwd)"
+STAGE="$(mktemp -d "${TMPDIR:-/tmp}/kolinos-iso.XXXXXX")"
+trap 'rm -rf "$STAGE"' EXIT
+
+log() { printf '[iso] %s\n' "$*"; }
+die() { printf '[iso][erro] %s\n' "$*" >&2; exit 1; }
+
+have() { command -v "$1" >/dev/null 2>&1; }
+have xorriso || die "xorriso não instalado (Debian: apt install xorriso)"
+
+mkdir -p "$OUT"
+TARBALL="$(ls "$OUT"/kolinos-*-"$KOLIN_ARCH".tar.xz 2>/dev/null | head -1 || true)"
+[ -n "$TARBALL" ] || die "archives do rootfs não encontrado em $OUT (rode o build antes)"
+
+log "montando árvore em $STAGE"
+mkdir -p "$STAGE/rootfs" "$STAGE/docs" "$STAGE/install/scripts/termux" "$STAGE/install/scripts/host" \
+         "$STAGE/install/config" "$STAGE/install/packages" "$STAGE/install/tools"
+
+# Rootfs + project source payload.
+cp -a "$TARBALL" "$STAGE/rootfs/"
+cp -a "$ROOT/VERSION" "$ROOT/LICENSE" "$ROOT/build.sh" "$STAGE/"
+cp -a "$ROOT/build" "$ROOT/config" "$ROOT/packages" "$ROOT/tools" "$STAGE/install/"
+cp -a "$ROOT/docs/." "$STAGE/docs/"
+cp -a "$ROOT/scripts/termux" "$ROOT/scripts/host" "$STAGE/install/scripts/" 2>/dev/null || true
+cp -a "$ROOT/repo" "$STAGE/install/" 2>/dev/null || true
+
+# Manifest with the archive checksum, consumed by the Termux installer.
+SUM="$(sha256sum "$TARBALL" | awk '{print $1}')"
+cat > "$STAGE/MANIFEST" <<EOF
+KOLIN_NAME=$KOLIN_NAME
+KOLIN_VERSION=$KOLIN_VERSION
+KOLIN_CODENAME=$KOLIN_CODENAME
+KOLIN_ARCH=$KOLIN_ARCH
+ROOTFS_FILE=rootfs/$(basename "$TARBALL")
+ROOTFS_SHA256=$SUM
+BUILD_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+EOF
+
+cat > "$STAGE/README.txt" <<EOF
+KolinOS ${KOLIN_VERSION} (${KOLIN_CODENAME}) — arm64
+=====================================================
+
+Este ISO é um CARRIER de dados, não uma imagem inicializável.
+Ele contém:
+
+  rootfs/    root filesystem Debian ARM64 personalizado como KolinOS
+  install/   código-fonte do sistema de build + instalador para Termux
+  docs/      documentação (fases, limitações, roadmap)
+  MANIFEST   metadados + checksum SHA-256 do rootfs
+
+Como usar no Termux (Android, arm64):
+
+  pkg install proot-distro
+  bash install/scripts/termux/install.sh rootfs/$(basename "$TARBALL")
+
+Detalhes: veja docs/README.md e docs/PHASES.md.
+Base: Debian ${KOLIN_DEBIAN_SUITE}. Licenças dos pacotes: /usr/share/doc/*/copyright.
+EOF
+
+VOL="KOLINOS_$(printf '%s' "$KOLIN_VERSION" | tr -d '.')"
+VOL="${VOL:0:16}"
+ISO="$OUT/kolinos-${KOLIN_VERSION}-${KOLIN_CODENAME_LOWER}-${KOLIN_ARCH}.iso"
+
+log "gerando $ISO"
+xorriso -as mkisofs \
+    -iso-level 3 \
+    -rock -joliet -joliet-long \
+    -volid "$VOL" \
+    -publisher "KolinOS" \
+    -preparer "KolinOS build system" \
+    -o "$ISO" "$STAGE" >/dev/null
+
+( cd "$OUT" && sha256sum "$(basename "$ISO")" >> SHA256SUMS )
+log "ISO: $(du -h "$ISO" | awk '{print $1}')"
+echo "$ISO"

@@ -1,0 +1,5 @@
+#!/bin/sh
+# kolinos-version — print the KolinOS version string.
+set -eu
+. /etc/os-release 2>/dev/null || true
+echo "KolinOS ${VERSION_ID:-?} (${VERSION_CODENAME:-?})"

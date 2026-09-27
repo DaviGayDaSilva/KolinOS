@@ -1,0 +1,19 @@
+#!/bin/sh
+# kolinos-info — show KolinOS system information.
+set -eu
+
+[ -r /etc/os-release ] && . /etc/os-release
+
+printf '\n  \033[1;35m%s %s\033[0m (%s)\n' \
+    "${NAME:-KolinOS}" "${VERSION_ID:-?}" "${VERSION_CODENAME:-?}"
+printf '  ─────────────────────────────────────\n'
+printf '  ID         : %s\n' "${ID:-kolinos}"
+printf '  Base       : %s\n' "${ID_LIKE:-debian}"
+printf '  Arquitetura: %s\n' "$(uname -m)"
+printf '  Hostname   : %s\n' "$(hostname 2>/dev/null || cat /etc/hostname 2>/dev/null || echo '?')"
+if [ -r /etc/kolinos/version ]; then
+    printf '  Build      : %s\n' "$(grep -E '^BUILD_DATE=' /etc/kolinos/version | cut -d= -f2-)"
+fi
+printf '  Kernel     : %s\n' "$(uname -sr)"
+printf '  Pacotes    : %s instalados\n' "$(dpkg-query -f '.\n' -W 2>/dev/null | wc -l)"
+printf '\n'

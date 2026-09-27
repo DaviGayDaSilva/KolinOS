@@ -1,0 +1,13 @@
+╭──────────────────────────────────────────╮
+│                                          │
+│            K O L I N O S   O S           │
+│                                          │
+╰──────────────────────────────────────────╯
+
+ Bem-vindo(a) ao KolinOS.
+
+ Documentação : @KOLIN_HOME_URL@
+ Reportar bug : @KOLIN_BUG_URL@
+
+ Este sistema é baseado em Debian. Use "apt" normalmente.
+ Para administrar: sudo <comando>   (usuário: @KOLIN_DEFAULT_USER@)

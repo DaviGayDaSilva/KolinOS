@@ -1,0 +1,28 @@
+# KolinOS identity — single source of truth for the whole build system.
+# This file is sourced by shell scripts (build.sh, stages, installers).
+# Keep values free of whitespace and shell metacharacters.
+
+KOLIN_NAME="KolinOS"
+KOLIN_VERSION="1.0.0"
+KOLIN_CODENAME="Corvo"
+KOLIN_VERSION_CODENAME="1.0 (Corvo)"
+
+# Debian base used to build the rootfs.
+KOLIN_DEBIAN_SUITE="trixie"       # Debian 13
+KOLIN_DEBIAN_MIRROR="http://deb.debian.org/debian"
+KOLIN_DEBIAN_SECURITY="http://deb.debian.org/debian-security"
+
+KOLIN_ARCH="arm64"
+
+# Homepage / identity URLs (placeholders until the APT repo exists — Phase 9).
+KOLIN_HOME_URL="https://github.com/DaviGayDaSilva/KolinOS"
+KOLIN_SUPPORT_URL="https://github.com/DaviGayDaSilva/KolinOS/issues"
+KOLIN_BUG_URL="https://github.com/DaviGayDaSilva/KolinOS/issues"
+
+# Default identity for the generated image.
+KOLIN_HOSTNAME="kolinos"
+KOLIN_DEFAULT_USER="kolin"
+# Default password for the first user. CHANGE IT — it is documented and public.
+KOLIN_DEFAULT_PASSWORD="kolinos"
+KOLIN_TIMEZONE="UTC"
+KOLIN_LOCALE="C.UTF-8"

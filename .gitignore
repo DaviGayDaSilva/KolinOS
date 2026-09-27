@@ -1,0 +1,13 @@
+# Artefatos gerados pelo build
+/rootfs/
+/output/*
+!/output/.gitkeep
+
+# Repositório APT construído
+/repo/public/
+/repo/keys/
+
+# Temporários
+*.tmp
+*.log
+.DS_Store

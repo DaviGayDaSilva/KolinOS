@@ -1,0 +1,35 @@
+# KolinOS base package set (Debian packages).
+# One package per line. Blank lines and lines starting with '#' are ignored.
+# Keep this list lean: KolinOS targets phones with little RAM and storage.
+
+# Core system
+sudo
+locales
+tzdata
+ca-certificates
+gnupg
+apt-utils
+
+# Networking
+curl
+wget
+iproute2
+iputils-ping
+dnsutils
+openssh-client
+
+# Editing & shell quality of life
+nano
+less
+bash-completion
+htop
+file
+unzip
+xz-utils
+bzip2
+
+# Diagnostics
+procps
+psmisc
+strace
+lsof
