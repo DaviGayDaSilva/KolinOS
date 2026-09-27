@@ -41,6 +41,18 @@ check "sources.list"           'grep -c "^deb" /etc/apt/sources.list'
 check "apt tuning aplicado"    'grep -q "Install-Recommends \"false\"" /etc/apt/apt.conf.d/99kolinos && echo ok'
 check "repo KolinOS inativo"   'test -f /etc/apt/sources.list.d/kolinos.sources.disabled && echo ok'
 
+printf '\nIdentidade visual (FASE 3):\n'
+check "paleta presente"        'test -f /etc/kolinos/branding/palette.txt && echo ok'
+check "logo do corvo"          'grep -q "██████" /etc/kolinos/branding/logo.txt && echo ok'
+check "tokens de cor"          '. /etc/kolinos/colors.sh; echo "primary=$KOLIN_COLOR_PRIMARY accent=$KOLIN_COLOR_ACCENT"'
+check "kolinos-info completo"  'kolinos-info 2>/dev/null | grep -q "^  Base" && echo ok'
+check "motd com branding"      'grep -q "██████" /etc/motd && echo ok'
+if kolin_run "$R" 'grep -rIl "@KOLIN_" /etc /usr/local/bin /usr/lib/os-release 2>/dev/null | grep -q .' >/dev/null 2>&1; then
+    printf '  \033[1;31m✗\033[0m placeholders @KOLIN_* não renderizados (FALHOU)\n'; fail=1
+else
+    printf '  \033[1;32m✔\033[0m nenhum placeholder @KOLIN_* pendente\n'
+fi
+
 printf '\nBase mínima (FASE 2):\n'
 check "machine-id vazio"       'test ! -s /etc/machine-id && echo vazio'
 check "resolv.conf de runtime" 'grep -q "managed at runtime" /etc/resolv.conf && echo ok'

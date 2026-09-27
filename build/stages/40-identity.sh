@@ -17,8 +17,12 @@ EOF
     render_template "$KOLIN_ROOT_DIR/config/os-release.in" "$r/etc/os-release"
     render_template "$KOLIN_ROOT_DIR/config/os-release.in" "$r/usr/lib/os-release"
     render_template "$KOLIN_ROOT_DIR/config/motd/00-header" "$r/etc/motd"
-    mkdir -p "$r/etc/kolinos/branding"
+    install -d -m 0755 "$r/etc/kolinos/branding"
     cp "$KOLIN_ROOT_DIR/config/branding/logo.txt" "$r/etc/kolinos/branding/logo.txt"
+    cp "$KOLIN_ROOT_DIR/config/branding/logo-small.txt" "$r/etc/kolinos/branding/logo-small.txt"
+    cp "$KOLIN_ROOT_DIR/config/branding/palette.txt" "$r/etc/kolinos/branding/palette.txt"
+    render_template "$KOLIN_ROOT_DIR/config/branding/colors.sh.in" "$r/etc/kolinos/colors.sh"
+    chmod 0644 "$r/etc/kolinos/colors.sh"
     {
         echo "NAME=${KOLIN_NAME}"
         echo "VERSION=${KOLIN_VERSION}"

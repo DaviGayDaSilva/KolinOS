@@ -1,19 +1,63 @@
 #!/bin/sh
-# kolinos-info — show KolinOS system information.
+# kolinos-info — show KolinOS system information (a small neofetch-like tool).
 set -eu
 
 [ -r /etc/os-release ] && . /etc/os-release
 
-printf '\n  \033[1;35m%s %s\033[0m (%s)\n' \
-    "${NAME:-KolinOS}" "${VERSION_ID:-?}" "${VERSION_CODENAME:-?}"
-printf '  ─────────────────────────────────────\n'
-printf '  ID         : %s\n' "${ID:-kolinos}"
-printf '  Base       : %s\n' "${ID_LIKE:-debian}"
-printf '  Arquitetura: %s\n' "$(uname -m)"
-printf '  Hostname   : %s\n' "$(hostname 2>/dev/null || cat /etc/hostname 2>/dev/null || echo '?')"
-if [ -r /etc/kolinos/version ]; then
-    printf '  Build      : %s\n' "$(grep -E '^BUILD_DATE=' /etc/kolinos/version | cut -d= -f2-)"
+# Brand colours (empty when not a terminal).
+KOLIN_C_PRIMARY=''; KOLIN_C_ACCENT=''; KOLIN_C_MUTED=''; KOLIN_C_RESET=''
+KOLIN_C_BOLD=''
+[ -r /etc/kolinos/colors.sh ] && . /etc/kolinos/colors.sh
+
+kver=""
+[ -r /etc/kolinos/version ] && kver="$(sed -n 's/^DEBIAN_SUITE=//p' /etc/kolinos/version)"
+kbuild=""
+[ -r /etc/kolinos/version ] && kbuild="$(sed -n 's/^BUILD_DATE=//p' /etc/kolinos/version)"
+
+mem=""
+if [ -r /proc/meminfo ]; then
+    tot="$(awk '/^MemTotal:/{print $2}' /proc/meminfo 2>/dev/null || true)"
+    [ -n "$tot" ] && mem="$((tot / 1024)) MB"
 fi
-printf '  Kernel     : %s\n' "$(uname -sr)"
-printf '  Pacotes    : %s instalados\n' "$(dpkg-query -f '.\n' -W 2>/dev/null | wc -l)"
+
+up=""
+if [ -r /proc/uptime ]; then
+    s="$(awk '{printf "%d", $1}' /proc/uptime 2>/dev/null || true)"
+    [ -n "$s" ] && up="$((s / 3600))h$(((s % 3600) / 60))m"
+fi
+
+# Logo, painted in the primary brand colour.
+if [ -r /etc/kolinos/branding/logo.txt ]; then
+    printf '%s' "$KOLIN_C_PRIMARY"
+    cat /etc/kolinos/branding/logo.txt
+    printf '%s' "$KOLIN_C_RESET"
+fi
+
+printf '%s%s %s %s%s (%s%s%s)\n' \
+    "$KOLIN_C_BOLD" "$KOLIN_C_PRIMARY" "${NAME:-KolinOS}" \
+    "${VERSION_ID:-?}" "$KOLIN_C_RESET" "$KOLIN_C_ACCENT" \
+    "${VERSION_CODENAME:-?}" "$KOLIN_C_RESET"
+
+# Prefer /etc/hostname: inside proot/chroot `hostname` reports the Android host
+# kernel's name, which would hide the KolinOS identity.
+khost="$(cat /etc/hostname 2>/dev/null || hostname 2>/dev/null || echo '?')"
+
+row() { # row <label> <value>
+    printf '  %s%-12s%s %s\n' "$KOLIN_C_MUTED" "$1" "$KOLIN_C_RESET" "$2"
+}
+
+printf '  %s─────────────────────────────%s\n' "$KOLIN_C_MUTED" "$KOLIN_C_RESET"
+row "SO"          "${NAME:-KolinOS} ${VERSION_ID:-?} (${VERSION_CODENAME:-?})"
+[ -n "$kver" ] && row "Base" "Debian ${kver}"
+row "ID"          "${ID:-kolinos}  (ID_LIKE=${ID_LIKE:-debian})"
+row "Arquitetura" "$(uname -m)"
+row "Kernel"      "$(uname -sr)"
+row "Hostname"    "$khost"
+row "Usuário"     "$(id -un 2>/dev/null || echo '?')"
+row "Shell"       "${SHELL:-/bin/sh}"
+row "Pacotes"     "$(dpkg-query -f '.\n' -W 2>/dev/null | wc -l) (dpkg)"
+[ -n "$mem" ] && row "Memória" "$mem"
+[ -n "$up" ]  && row "Uptime"  "$up"
+[ -n "$kbuild" ] && row "Build" "$kbuild"
 printf '\n'
+exit 0

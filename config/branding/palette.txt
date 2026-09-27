@@ -1,0 +1,11 @@
+# KolinOS brand palette
+# Códigos SGR de 256 cores. Fonte única em VERSION (KOLIN_COLOR_*).
+#
+#   PRIMARY  99   roxo/índigo   cor da marca, título, prompt
+#   ACCENT   44   ciano         destaques, links, valores
+#   MUTED   245   cinza         texto secundário, rótulos
+#   OK       76   verde         sucesso
+#   WARN    214   âmbar         aviso
+#   ERR     203   vermelho      erro
+#
+# ANSI_COLOR em /etc/os-release usa o RGB equivalente a PRIMARY (#785AC8).

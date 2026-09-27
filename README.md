@@ -11,8 +11,9 @@ desenvolvimento, execução dentro do **Termux** usando `proot` (sem root).
 - **Arquitetura principal:** arm64 / aarch64
 - **Gerenciador de pacotes:** APT/DPKG (é Debian por dentro)
 
-> Estado atual: **Fases 1 e 2** concluídas. Veja [`docs/PHASES.md`](docs/PHASES.md)
-> para o roadmap, [`docs/PHASE2.md`](docs/PHASE2.md) para a base mínima e
+> Estado atual: **Fases 1, 2 e 3** concluídas. Veja [`docs/PHASES.md`](docs/PHASES.md)
+> para o roadmap, [`docs/PHASE2.md`](docs/PHASE2.md) (base mínima) e
+> [`docs/PHASE3.md`](docs/PHASE3.md) (identidade visual), além de
 > [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md) para o que funciona (e o que não
 > funciona) em Termux/proot/root.
 
@@ -140,6 +141,8 @@ Opções úteis: `--arch`, `--suite`, `--mirror`, `--rootfs`, `--output`,
 ## Documentação
 
 - [`docs/PHASES.md`](docs/PHASES.md) — as 10 fases, com o que já existe.
+- [`docs/PHASE2.md`](docs/PHASE2.md) — a base mínima (modo slim, locale, higiene).
+- [`docs/PHASE3.md`](docs/PHASE3.md) — identidade visual, paleta e ferramentas.
 - [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md) — Termux vs proot vs root vs kernel.
 - [`docs/BUILD.md`](docs/BUILD.md) — construir, testar e entrar no sistema.
 

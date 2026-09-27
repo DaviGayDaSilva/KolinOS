@@ -26,3 +26,12 @@ KOLIN_DEFAULT_USER="kolin"
 KOLIN_DEFAULT_PASSWORD="kolinos"
 KOLIN_TIMEZONE="UTC"
 KOLIN_LOCALE="C.UTF-8"
+
+# Brand palette (256-colour SGR codes). Single source for os-release, the
+# prompt and the kolinos-info output. Keep in sync with config/branding/palette.txt.
+KOLIN_COLOR_PRIMARY="99"    # roxo/índigo — cor da marca
+KOLIN_COLOR_ACCENT="44"     # ciano — destaques
+KOLIN_COLOR_MUTED="245"     # cinza — texto secundário
+KOLIN_COLOR_OK="76"
+KOLIN_COLOR_WARN="214"
+KOLIN_COLOR_ERR="203"

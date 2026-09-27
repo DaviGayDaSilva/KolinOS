@@ -1,13 +1,19 @@
-╭──────────────────────────────────────────╮
-│                                          │
-│            K O L I N O S   O S           │
-│                                          │
-╰──────────────────────────────────────────╯
+        ▄▄▄▄▄▄▄▄▄▄▄
+      ▄█████████████████▄
+    ▄█████▀▀         ▀▀█████▄
+   ██████     ◆     ◆     ██████
+   ██████        ◆◆        ██████
+   ██████▄                 ▄██████
+    ▀██████▄▄         ▄▄██████▀
+      ▀▀█████████████████▀▀
+          ▀▀▀▀▀▀▀▀▀▀▀▀▀
 
- Bem-vindo(a) ao KolinOS.
+   @KOLIN_NAME@ @KOLIN_VERSION@  ·  codename "@KOLIN_CODENAME@"
 
- Documentação : @KOLIN_HOME_URL@
- Reportar bug : @KOLIN_BUG_URL@
+Bem-vindo(a) ao @KOLIN_NAME@, uma distribuição baseada em Debian.
 
- Este sistema é baseado em Debian. Use "apt" normalmente.
- Para administrar: sudo <comando>   (usuário: @KOLIN_DEFAULT_USER@)
+  Documentação : @KOLIN_HOME_URL@
+  Reportar bug : @KOLIN_BUG_URL@
+
+Use "apt" normalmente. Para administrar: sudo <comando>  (usuário: @KOLIN_DEFAULT_USER@)
+Digite "kolinos-info" para ver os detalhes do sistema.

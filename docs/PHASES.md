@@ -50,24 +50,25 @@ Como testar: `sudo bash build.sh && sudo bash scripts/host/verify-rootfs.sh`.
 
 ---
 
-## FASE 3 — Personalização do sistema 🟡
+## FASE 3 — Personalização do sistema ✅
 
-**Objetivo:** o sistema se identifica como KolinOS, não como Debian.
+**Objetivo:** o sistema se identifica como KolinOS, não como Debian — no texto,
+na cor e nas ferramentas. Detalhes em `docs/PHASE3.md`.
 
 O que existe (`40-identity.sh`):
 
-- `/etc/os-release` e `/usr/lib/os-release` personalizados (template
-  `config/os-release.in`).
-- Motd, `/etc/issue`, hostname, prompt colorido e timezone.
-- Ferramentas `kolinos-info` e `kolinos-version` em `/usr/local/bin`.
-- Usuário padrão `kolin` com sudo (`50-users.sh`).
-- Hooks de pós-instalação (`config/postinstall/`).
+- `/etc/os-release` e `/usr/lib/os-release` personalizados (`ID=kolinos`,
+  `ID_LIKE=debian`), motd com o logotipo do corvo, `/etc/issue` e hostname.
+- **Paleta de marca** como fonte única em `VERSION`
+  (`KOLIN_COLOR_PRIMARY/ACCENT/...`), renderizada em `/etc/kolinos/colors.sh`
+  (só emite escapes quando é um terminal).
+- Prompt colorido usando os tokens de cor, via `/etc/profile.d/kolinos.sh`.
+- `kolinos-info` (estilo neofetch: logo + SO, base, arquitetura, kernel,
+  hostname, usuário, shell, pacotes, memória, uptime) e `kolinos-version`.
+- Usuário padrão `kolin` com sudo (`50-users.sh`) e hooks (`config/postinstall/`).
+- O verificador garante que **nenhum placeholder `@KOLIN_*@` ficou pendente**.
 
-Falta ainda (próximas iterações desta fase):
-
-- Ícone/logo gráfico definitivo.
-- Tema visual (fontes, cores) e wallpaper.
-- `neofetch`-like próprio mais rico.
+Pendente (FASE 7, gráfica): logo/wallpaper em imagem, tema de desktop, ícones.
 
 ---
 

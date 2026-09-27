@@ -1,19 +1,23 @@
-# KolinOS dynamic MOTD entry (installed as /etc/profile.d/kolinos.sh).
-# Shown only for interactive shells, and only once per login.
+# KolinOS shell environment (installed as /etc/profile.d/kolinos.sh).
+# Colours and identity are rendered from VERSION at build time.
 
 export HOSTNAME="@KOLIN_HOSTNAME@"
 export KOLINOS="@KOLIN_VERSION@ (@KOLIN_CODENAME@)"
 
-# Colourful prompt that identifies the system.
-if [ -n "${PS1:-}" ] || [ "${BASH:-}" ]; then
-    PS1='\[\e[1;35m\]\u@\h\[\e[0m\] \[\e[1;36m\]\w\[\e[0m\]\$ '
+# Brand colours (quietly skips if the file is missing).
+[ -r /etc/kolinos/colors.sh ] && . /etc/kolinos/colors.sh
+
+if [ -n "${BASH:-}" ] || [ -n "${PS1:-}" ]; then
+    PS1="\[${KOLIN_C_BOLD}\]\[${KOLIN_C_PRIMARY}\]\u@\h\[${KOLIN_C_RESET}\] \[${KOLIN_C_ACCENT}\]\w\[${KOLIN_C_RESET}\]\$ "
 fi
 
+# Show the banner once per interactive login.
 case "$-" in
     *i*)
         if [ -z "${KOLINOS_BANNER_SHOWN:-}" ] && [ -f /etc/motd ]; then
             cat /etc/motd
-            export KOLINOS_BANNER_SHOWN=1
+            KOLINOS_BANNER_SHOWN=1
+            export KOLINOS_BANNER_SHOWN
         fi
         ;;
 esac
