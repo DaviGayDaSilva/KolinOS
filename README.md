@@ -193,6 +193,7 @@ Opções úteis: `--arch`, `--suite`, `--mirror`, `--snapshot`, `--reproducible`
 - [`docs/PHASE6.md`](docs/PHASE6.md) — sistema de instalação (proot/dir/disk) e first boot.
 - [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md) — Termux vs proot vs root vs kernel.
 - [`docs/BUILD.md`](docs/BUILD.md) — construir, testar e entrar no sistema.
+- [`docs/LIMBO.md`](docs/LIMBO.md) — requisitos para rodar no Limbo PC Emulator (Android).
 
 ---
 
