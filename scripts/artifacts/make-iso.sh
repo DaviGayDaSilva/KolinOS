@@ -106,6 +106,6 @@ xorriso -as mkisofs \
     -o "$ISO" "$STAGE" >/dev/null
 
 ( cd "$OUT" && { awk -v n="$(basename "$ISO")" '$NF != n && $NF != "./" n' SHA256SUMS 2>/dev/null || true; \
-    sha256sum "$(basename "$ISO")"; } > SHA256SUMS.tmp && mv SHA256SUMS.tmp SHA256SUMS )
+    sha256sum "$(basename "$ISO")"; } > SHA256SUMS.tmp && mv -f SHA256SUMS.tmp SHA256SUMS )
 log "ISO: $(du -h "$ISO" | awk '{print $1}')"
 echo "$ISO"

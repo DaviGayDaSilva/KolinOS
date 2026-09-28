@@ -43,5 +43,10 @@ find "$STAGE" -exec touch -h -d "@$STAMP" {} + 2>/dev/null || true
 SUM="$(sha256sum "$ZIP" | awk '{print $1}')"
 : > "$OUT/SOURCE-SHA256SUMS"
 echo "$SUM  $(basename "$ZIP")" >> "$OUT/SOURCE-SHA256SUMS"
+# Keep the combined manifest in sync too. Stage 80 writes SHA256SUMS before the
+# archive exists, so without this the zip line keeps a stale hash from an
+# earlier build.
+( cd "$OUT" && { awk -v n="$(basename "$ZIP")" '$NF != n && $NF != "./" n' SHA256SUMS 2>/dev/null || true; \
+    sha256sum "$(basename "$ZIP")"; } > SHA256SUMS.tmp && mv -f SHA256SUMS.tmp SHA256SUMS )
 echo "[zip] $ZIP ($(du -h "$ZIP" | awk '{print $1}'))"
 echo "[zip] sha256: $SUM"
