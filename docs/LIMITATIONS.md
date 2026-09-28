@@ -136,7 +136,39 @@ O que muda no Termux/Android:
 
 ---
 
+## Sobre executar o rootfs arm64 fora do Termux (chroot/qemu)
+
+Ao testar o repositório APT dentro do rootfs num host x86_64, aparecem dois
+limites que **não** existem no Termux — e que vale não confundir com defeito do
+repositório:
+
+- **`chroot` não executa binários arm64.** Sem uma entrada `binfmt_misc`, o
+  kernel vê um ELF desconhecido. O APT não roda apenas a si mesmo: ele *executa*
+  `/usr/lib/apt/methods/*`, o `dpkg` e o verificador `sqv`. Nenhum deles inicia.
+  Dá para contornar com um wrapper **nativo** (`tools/host/qemu-method-wrapper.c`,
+  compilado x86_64 estático) que reexecuta o helper real via
+  `qemu-aarch64-static`; um wrapper shell não serve, porque o shell dentro do
+  chroot também é arm64.
+- **`qemu-user` não emula `execve` de binários do guest.** Rodando
+  `qemu-aarch64-static -L / /bin/bash`, o `bash` funciona, mas quando ele tenta
+  iniciar outro binário arm64 (`/usr/bin/dpkg-split`, por exemplo) o kernel
+  recebe um ELF desconhecido e responde `Exec format error`. Consequência: o
+  `dpkg` começa a desempacotar e para no `dpkg-split`. Não é falha do `.deb`.
+
+Como resolver cada caso:
+
+- **`binfmt_misc`** resolve os dois, mas exige `/proc/sys/fs/binfmt_misc`
+  gravável — ou seja, root e um kernel que exponha o recurso. Em container isso
+  costuma ser somente-leitura.
+- **`proot`** resolve o exec aninhado em espaço de usuário e é o mecanismo que o
+  Termux/proot-distro usa. É o caminho recomendado no celular.
+- **`binfmt_misc` via systemd** (host Linux normal): `systemd-binfmt` registra o
+  handler sozinho assim que `qemu-user-static` é instalado.
+
+---
+
 ## Sobre o build cross-arch (host x86_64 → alvo arm64)
+
 
 - Usa `debootstrap --foreign` + `qemu-aarch64-static`. Isso produz um rootfs
   **arm64 de verdade**, executável no celular.

@@ -189,3 +189,22 @@ cd repo/public && python3 -m http.server 8080
 O repositório é reconstruído do zero a cada execução e só indexa `.deb` da
 arquitetura alvo (mais `Architecture: all`). `--unsigned` é para testes locais;
 o padrão tenta assinar com a chave criada por `make-gpg-key.sh`.
+
+### Verificar o repositório
+
+```sh
+# No host: assinatura, metadados, apt-get update e download de cada pacote.
+bash scripts/host/verify-repo.sh
+
+# Dentro do rootfs arm64: apt resolve e baixa um pacote KolinOS de verdade.
+# Precisa de root (usa chroot e bind mounts) e de qemu-user-static.
+sudo bash scripts/host/qemu-apt-test.sh
+```
+
+Os dois scripts falham com mensagem explícita quando algo está errado. O
+segundo precisa de `qemu-user-static` no host; ele instala
+`tools/host/qemu-method-wrapper.c` (compilado nativo) sobre os helpers que o
+APT executa, porque o chroot não executa binários arm64. O desempacotamento via
+`dpkg` não completa aí — o qemu-user não emula `execve` de binários do guest —,
+o que o script reporta como limitação do ambiente. Para desempacotar de fato,
+use `proot` (Termux) ou `binfmt_misc` (com root); veja `docs/LIMITATIONS.md`.

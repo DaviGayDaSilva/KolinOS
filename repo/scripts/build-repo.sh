@@ -100,12 +100,36 @@ if [ "$UNSIGNED" = 1 ]; then
     log "repositório NÃO assinado (use --unsigned apenas para testes locais)"
 else
     KEY="${KOLIN_APT_KEY:-$ROOT/repo/keys/kolinos.gpg}"
-    if [ -f "$KEY" ]; then
-        log "assinando Release com $KEY"
-        gpg --batch --yes --armor --detach-sign -u "$KEY" -o "$PUB/dists/$CODENAME/Release.gpg" "$PUB/dists/$CODENAME/Release"
-        gpg --batch --yes --clearsign   -u "$KEY" -o "$PUB/dists/$CODENAME/InRelease"   "$PUB/dists/$CODENAME/Release"
-    else
+    if [ ! -f "$KEY" ]; then
         warn "chave ausente em $KEY — rode 'make-gpg-key.sh' ou use --unsigned"
+    else
+        # gpg's -u takes a key id, not a path, so exporting a key file and
+        # passing it to -u never signs anything ("No secret key"). Import the
+        # key into a throwaway GNUPGHOME instead: that also keeps the build
+        # from touching (or depending on) the user's own keyring.
+        GNUPGHOME="$(mktemp -d "${TMPDIR:-/tmp}/kolinos-gpg.XXXXXX")"
+        chmod 0700 "$GNUPGHOME"
+        export GNUPGHOME
+        trap 'rm -rf "$GNUPGHOME"' EXIT
+
+        log "assinando Release com $KEY"
+        gpg --batch --quiet --import "$KEY" 2>/dev/null \
+            || die "não foi possível importar a chave de $KEY"
+        KEYID="$(gpg --batch --with-colons --list-secret-keys \
+                 | awk -F: '/^fpr:/{print $10; exit}')"
+        [ -n "$KEYID" ] || die "nenhuma chave secreta em $KEY"
+
+        # The key is generated without a passphrase (automation), but signing
+        # still needs loopback mode or gpg would try to prompt.
+        sign_args=(--batch --yes --pinentry-mode loopback --passphrase ''
+                   --local-user "$KEYID")
+        gpg "${sign_args[@]}" --armor --detach-sign \
+            -o "$PUB/dists/$CODENAME/Release.gpg" "$PUB/dists/$CODENAME/Release"
+        gpg "${sign_args[@]}" --clearsign \
+            -o "$PUB/dists/$CODENAME/InRelease" "$PUB/dists/$CODENAME/Release"
+        rm -rf "$GNUPGHOME"
+        trap - EXIT
+        log "assinado (fingerprint ${KEYID:0:16})"
     fi
 fi
 

@@ -228,22 +228,53 @@ Falta ainda:
 
 ---
 
-## FASE 9 — Repositório próprio 🟡
+## FASE 9 — Repositório próprio 🔵
 
 **Objetivo:** um repositório APT assinado para os pacotes KolinOS.
 
 O que existe (`repo/`):
 
 - `scripts/build-repo.sh` gera `pool/` + `dists/<codename>/main/binary-arm64/`
-  com `Packages`, `Packages.gz` e `Release`.
-- `scripts/make-gpg-key.sh` cria a chave Ed25519 de assinatura.
-- O rootfs já traz `/etc/apt/sources.list.d/kolinos.sources.disabled` e o
-  snippet de confiança em `config/apt/trusted.gpg.d/`.
+  com `Packages`, `Packages.gz`, `Release`, `Release.gpg` e `InRelease`.
+- `scripts/make-gpg-key.sh` cria a chave Ed25519 de assinatura (sem pinentry
+  interativo; a chave privada nunca é versionada).
+- `config/apt/trusted.gpg.d/kolinos.gpg` é a chave pública, instalada no rootfs
+  pelo estágio 20 — sem ela o `Signed-By` do `kolinos.sources` apontaria para um
+  arquivo inexistente.
+- O rootfs traz `/etc/apt/sources.list.d/kolinos.sources.disabled`; `apt-kolinos
+  enable` ativa o repositório.
+
+Verificação (o que foi realmente testado):
+
+- `scripts/host/verify-repo.sh` — no host: confere `Origin`/`Suite`/
+  `Architectures`, valida `Release.gpg` e `InRelease` com a chave pública, roda
+  um `apt-get update` de verdade e baixa cada pacote do índice. Declara a
+  arquitetura estrangeira (`var/lib/dpkg/arch`), senão um repositório arm64
+  íntegro responde "Unable to locate package" num host amd64.
+- `scripts/host/qemu-apt-test.sh` — dentro do rootfs arm64: busca o índice e
+  resolve/baixa `kolinos-tools` via APT. Usa
+  `tools/host/qemu-method-wrapper.c`: o APT *executa* helpers
+  (`/usr/lib/apt/methods/*`, `dpkg`, `sqv`), e num chroot arm64 sobre kernel
+  amd64 nenhum deles roda sem binfmt_misc (que exige `/proc/sys` gravável). Um
+  wrapper shell não resolveria — o shell dentro do chroot também é arm64 —, daí
+  o wrapper ser um binário nativo estático.
+
+Limites conhecidos desta verificação (e por quê):
+
+- A verificação de assinatura dentro do chroot não conclui: o APT chama
+  `/usr/bin/sqv`, um binário arm64, e o chroot não executa arm64. Por isso o
+  teste marca o repositório como `trusted=yes` e verifica índice e download; a
+  assinatura é provada, com o `sqv` real, por `verify-repo.sh` no host.
+- O desempacotamento (`dpkg`) para no `dpkg-split`: o qemu-user **não emula
+  `execve` de binários do guest**, então o `dpkg` arm64 não consegue iniciar o
+  `dpkg-split` arm64. É limitação do ambiente de teste, não do repositório. No
+  Termux o `proot` faz essa ponte; com root, `binfmt_misc` faz.
 
 Falta ainda:
 
 - Publicação (GitHub Pages / servidor próprio) e ativação por padrão.
 - Rotação de chaves e política de assinatura.
+- Assinatura por pacote (`debsigs`) e `Valid-Until` com expiração.
 
 ---
 
