@@ -119,6 +119,11 @@ O modo `--rootfs` é útil durante o desenvolvimento: não exige montar nada, en
 funciona no mesmo contêiner onde o build roda. O modo `--image` é o teste que
 importa para esta fase, porque só ele exercita o caminho de boot completo.
 
+O script boota uma **cópia** da imagem: o systemd escreve no journal já no
+primeiro boot, então inicializar o arquivo em `output/` no lugar o alteraria e
+invalidaria o checksum publicado. Ele também remove o diretório temporário ao
+sair (sem isso, cada boot vaza uma cópia de 1,4 GiB em `/tmp`).
+
 Boot verificado (TCG, sem KVM, portanto lento — alguns minutos):
 
 ```

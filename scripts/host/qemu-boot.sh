@@ -85,6 +85,10 @@ for v in /usr/share/AAVMF/AAVMF_VARS.fd /usr/share/qemu-efi-aarch64/QEMU_VARS.fd
 done
 
 RUN_DIR="$(mktemp -d "${TMPDIR:-/tmp}/kolinos-qemu.XXXXXX")"
+# Without this, every run leaks the firmware vars copy and (in image mode) a
+# full copy of the disk image — 1.4 GiB each time.
+cleanup() { rm -rf "$RUN_DIR"; }
+trap cleanup EXIT INT TERM
 FW_COPY="$RUN_DIR/vars.fd"
 if [ -n "$FW_VARS" ]; then
     cp "$FW_VARS" "$FW_COPY"
@@ -130,8 +134,14 @@ case "$MODE" in
     image)
         [ -f "$TARGET" ] || die "imagem não encontrada: $TARGET"
         TARGET="$(cd "$(dirname "$TARGET")" && pwd)/$(basename "$TARGET")"
+        # Boot a private copy: systemd writes to the journal on first boot, so
+        # booting the shipped image in place would mutate the artifact and break
+        # its checksum. Copying keeps the file under output/ pristine.
+        BOOT_IMG="$RUN_DIR/disk.img"
+        log "copiando a imagem para $BOOT_IMG (o original não é alterado)"
+        cp --reflink=auto "$TARGET" "$BOOT_IMG" 2>/dev/null || cp "$TARGET" "$BOOT_IMG"
         QEMU_ARGS+=(
-            -drive "if=none,format=raw,file=$TARGET,id=hd0"
+            -drive "if=none,format=raw,file=$BOOT_IMG,id=hd0"
             -device "virtio-blk-pci,drive=hd0,bootindex=0"
             -device "virtio-net-pci,netdev=n0"
             -netdev "user,id=n0"
@@ -148,22 +158,31 @@ log "log serial: $LOG  (timeout ${TIMEOUT}s)"
 
 : > "$LOG"
 set +e
-timeout --foreground "$TIMEOUT" qemu-system-aarch64 "${QEMU_ARGS[@]}" 2>&1 | tee -a "$LOG" &
+# Launch qemu directly (no pipe): `$!` must be the process that owns qemu, or
+# the kill below would only reach a `tee` and leave qemu running until the
+# timeout, holding the disk image open. `timeout` is the parent of qemu, so
+# killing it and its children stops the VM for real.
+timeout --foreground "$TIMEOUT" qemu-system-aarch64 "${QEMU_ARGS[@]}" > "$LOG" 2>&1 &
 QPID=$!
-# tee holds the pipe; wait for either the qemu process to finish or the marker
-# to show up, so a healthy boot does not burn the whole timeout.
+# Show the console live without a pipe in the process tree.
+tail -n +1 -f "$LOG" 2>/dev/null &
+TPID=$!
+# Wait for either qemu to exit on its own or the marker to appear, so a
+# healthy boot does not burn the whole timeout.
 for _ in $(seq 1 "$TIMEOUT"); do
     sleep 1
     if grep -qE "$EXPECT" "$LOG" 2>/dev/null; then
         log "marcador encontrado: $(grep -oE "$EXPECT" "$LOG" | head -1)"
         sleep 5
-        kill "$QPID" 2>/dev/null || true
+        kill "$TPID" 2>/dev/null || true
         pkill -P "$QPID" 2>/dev/null || true
+        kill "$QPID" 2>/dev/null || true
         wait "$QPID" 2>/dev/null
         exit 0
     fi
     kill -0 "$QPID" 2>/dev/null || break
 done
+kill "$TPID" 2>/dev/null || true
 wait "$QPID" 2>/dev/null
 set -e
 
