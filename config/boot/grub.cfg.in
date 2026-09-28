@@ -1,0 +1,55 @@
+# KolinOS boot menu — rendered at image build time (FASE 8).
+#
+# The root filesystem is located by its UUID, filled in below, so the menu never
+# depends on device names, which change between machines.
+# This same file is embedded into the GRUB EFI binary by grub-mkstandalone
+# (see build/stages/85-image.sh), so it must stay self-contained: no 'source',
+# no external modules.
+
+set timeout=5
+set default=0
+set gfxmode=auto
+set gfxpayload=keep
+
+# The Corvo Glass background is drawn on the graphical console. GRUB has no way
+# to test for a video mode up front, so on a serial-only console (QEMU
+# -nographic, a headless server) the gfxterm init prints
+# "no suitable video mode found" and falls back to text mode on its own.
+#
+# Only 'gfxterm' and 'console' are referenced: both always exist. Naming the
+# 'serial' terminal here fails with "terminal `serial' isn't found" on this
+# GRUB build (the module is not registered), and a failed terminal_output is
+# not fatal but prints noise on every boot. On a headless machine the firmware
+# console already *is* the serial port, so the menu is still visible.
+insmod all_video
+insmod png
+
+if loadfont unicode; then
+    terminal_output gfxterm
+    if [ -e /EFI/kolinos/background.png ]; then
+        background_image /EFI/kolinos/background.png
+    fi
+else
+    terminal_output console
+fi
+
+menuentry "KolinOS @KOLIN_VERSION@ (@KOLIN_CODENAME@)" --id kolinos {
+    echo "Carregando KolinOS @KOLIN_VERSION@ (@KOLIN_CODENAME@) ..."
+    search --no-floppy --fs-uuid --set=root @KOLIN_ROOT_UUID@
+    linux /vmlinuz root=UUID=@KOLIN_ROOT_UUID@ ro quiet loglevel=3 console=ttyAMA0 console=tty0
+    initrd /initrd.img
+}
+
+menuentry "KolinOS (modo verboso, diagnóstico)" --id kolinos-verbose {
+    echo "Carregando KolinOS em modo verboso ..."
+    search --no-floppy --fs-uuid --set=root @KOLIN_ROOT_UUID@
+    linux /vmlinuz root=UUID=@KOLIN_ROOT_UUID@ rw loglevel=7 console=ttyAMA0 console=tty0 systemd.log_level=debug
+    initrd /initrd.img
+}
+
+menuentry "KolinOS (single user / recuperação)" --id kolinos-rescue {
+    echo "Carregando KolinOS em modo de recuperação ..."
+    search --no-floppy --fs-uuid --set=root @KOLIN_ROOT_UUID@
+    linux /vmlinuz root=UUID=@KOLIN_ROOT_UUID@ rw init=/bin/bash console=ttyAMA0 console=tty0
+    initrd /initrd.img
+}

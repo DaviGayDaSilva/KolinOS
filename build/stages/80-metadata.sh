@@ -38,7 +38,8 @@ stage_main() {
     } > "$meta"
 
     log "checksums (sha256):"
-    ( cd "$out" && rm -f SHA256SUMS && sha256sum ./*.tar.* ./*.iso 2>/dev/null | tee SHA256SUMS ) || true
+    ( cd "$out" && rm -f SHA256SUMS && \
+        sha256sum ./*.tar.* ./*.iso ./*.img ./*.img.xz ./*.zip 2>/dev/null | tee SHA256SUMS ) || true
 
     log "metadados escritos em $meta"
 }

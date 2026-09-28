@@ -194,20 +194,37 @@ aqui depende de root; `lightdm` só faz sentido em hardware real.
 
 ---
 
-## FASE 8 — Imagens distribuíveis 🟡
+## FASE 8 — Imagens distribuíveis ✅
 
-**Objetivo:** produzir imagens prontas para distribuir.
+**Objetivo:** produzir imagens prontas para distribuir — e que realmente
+inicializem. Detalhes completos em `docs/PHASE8.md`.
 
 O que existe:
 
-- Rootfs `.tar.xz` versionado e com checksum (`output/`).
+- Rootfs `.tar.xz` versionado e com checksum (`output/`) — o artefato para
+  Termux/`proot-distro`.
 - **ISO carrier** gerada automaticamente (`scripts/artifacts/make-iso.sh`):
   contém o rootfs, o código-fonte e o instalador. **Não é inicializável.**
+- **Imagem de disco inicializável** (`build/stages/85-image.sh`, `--with-image`):
+  GPT com ESP FAT32 (GRUB EFI + kernel + initrd, menu com a marca) e partição
+  root ext4. Mais `.img.xz` comprimida. Montada **sem `loop device`**, usando
+  `mke2fs -d`, `parted` e mtools.
+- **Verificação de boot real** (`scripts/host/qemu-boot.sh`): boota o rootfs via
+  virtio-9p ou a imagem via firmware UEFI (EDK2/AAVMF) e espera o sistema chegar
+  ao userspace. Boot confirmado até `kolinos login:`.
+
+Corrigido nesta fase (afetava todos os artefatos):
+
+- `/dev/null` era arquivo comum no archive; agora é saneado (`kolin_fix_dev`).
+- Donos errados: `tar --owner=0` apagava contas reais (`/home/kolin` saía
+  `0/0`), e arquivos criados por redirecionamento herdavam o uid do host
+  (10001). Agora `kolin_normalize_owners` mapeia só ids sem conta.
 
 Falta ainda:
 
-- ISO **bootável** com kernel + bootloader (depende da Fase 10).
-- Imagem de disco (`.img`) para placas/armazenamento.
+- ISO **bootável** (hoje é carrier de dados; o `.img` é que inicializa).
+- Instalador gráfico.
+- Suporte a bootloader de celular (é FASE 10, não esta).
 
 ---
 

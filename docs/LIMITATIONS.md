@@ -149,5 +149,30 @@ O que muda no Termux/Android:
 
 - É uma ISO **carrier** (UDF/ISO9660): transporte de dados, não sistema
   inicializável. Contém o rootfs, o código-fonte, os docs e o instalador.
-- **Não inicializa** em PC nem em celular. Uma ISO bootável exige kernel +
-  bootloader e pertence à Fase 10.
+- **Não inicializa** em PC nem em celular.
+
+## Sobre a imagem de disco (`.img`)
+
+Gerada por `build.sh --with-image` (estágio `85-image.sh`).
+
+Funciona:
+
+- **Inicializa por UEFI**: firmware → `BOOTAA64.EFI` (GRUB) → kernel →
+  initramfs → systemd. Verificado em QEMU aarch64 + EDK2/AAVMF até o prompt
+  `kolinos login:`.
+- Serve para: QEMU `virt`, VMs ARM64, placas ARM64 que exponham UEFI, PCs ARM64.
+- Gravável com `dd` (ou `xz -d` e depois `dd`) em disco/SSD/cartão SD.
+
+**Não** funciona:
+
+- **Não inicializa em celular.** Android não usa UEFI: exige bootloader do
+  fabricante (ABL/LK), partição `boot` com kernel assinado e **device tree**
+  específica do aparelho. Gravar o `.img` no armazenamento de um celular não o
+  torna inicializável. Isso é FASE 10 e depende de bootloader desbloqueado e
+  kernel próprio.
+- **Não inicializa em PC x86**: o bootloader é `arm64-efi`. Não há suporte
+  `i386-pc` (BIOS).
+- **Sem KVM**, o boot de teste é emulado (TCG): funciona, mas é lento.
+- `mke2fs -d` copia a árvore mas não preserva `security.capability` de forma
+  completa; o `tar.xz` preserva (`--xattrs`). Se capacidades importarem, prefira
+  o `tar.xz`.

@@ -22,6 +22,10 @@
 #   --with-custom-debs Build KolinOS's own .deb packages and install them via
 #                      APT (stage 35). On by default.
 #   --no-custom-debs   Skip them, keeping only Debian packages.
+#   --with-image       Also build a distributable disk image (.img): GPT +
+#                      FAT32 ESP with GRUB/kernel/initrd + ext4 rootfs. Opt-in
+#                      like the desktop: the base image stays lean. Needs
+#                      linux-image-arm64 and grub-efi-arm64-bin in the rootfs.
 #   --with-desktop     Also install the Corvo Glass graphical session
 #                      (kolinos-desktop, stage 35 + graphics stage 65). Off by
 #                      default: it pulls in X11 from the Debian mirror and adds
@@ -47,6 +51,7 @@ KOLIN_SLIM=1
 KOLIN_ONLY_STAGES=""
 KOLIN_CUSTOM_DEBS=1
 KOLIN_DESKTOP=0
+KOLIN_IMAGE=0
 KOLIN_OUTPUT_DIR="$KOLIN_ROOT_DIR/output"
 KOLIN_ROOTFS="$KOLIN_ROOT_DIR/rootfs"
 # Reproducibility overrides (empty = use VERSION).
@@ -73,6 +78,8 @@ while [ $# -gt 0 ]; do
         --with-custom-debs) KOLIN_CUSTOM_DEBS=1; shift ;;
         --no-custom-debs)   KOLIN_CUSTOM_DEBS=0; shift ;;
         --with-desktop)   KOLIN_DESKTOP=1; shift ;;
+        --with-image)     KOLIN_IMAGE=1; shift ;;
+        --no-image)       KOLIN_IMAGE=0; shift ;;
         --force)          KOLIN_FORCE=1; shift ;;
         --keep-qemu)      KOLIN_KEEP_QEMU=1; shift ;;
         --slim)           KOLIN_SLIM=1; shift ;;
@@ -99,7 +106,7 @@ export KOLIN_ARCH DEB_ARCH
 export KOLIN_DEB_ARCH="$DEB_ARCH"
 export KOLIN_FORCE KOLIN_KEEP_QEMU KOLIN_INCLUDE_SOURCE KOLIN_NO_ISO KOLIN_SLIM
 export KOLIN_CUSTOM_DEBS
-export KOLIN_DESKTOP
+export KOLIN_DESKTOP KOLIN_IMAGE
 export KOLIN_ROOTFS KOLIN_OUTPUT_DIR
 export KOLIN_CODENAME_LOWER
 export KOLIN_SNAPSHOT KOLIN_SNAPSHOT_HOST

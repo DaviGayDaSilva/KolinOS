@@ -30,7 +30,10 @@ Fontes de não-determinismo que **já** têm tratamento; não reintroduza:
   `openssl passwd -6 -salt kolinos` + `usermod -p`.
 - `var/cache/ldconfig/aux-cache` grava inodes → removido no estágio 70.
 - `tar` GNU grava `atime`/`ctime` → formato `pax`, `delete=atime,delete=ctime`,
-  `--owner=0 --group=0 --numeric-owner`, ordem `LC_ALL=C`.
+  `--numeric-owner` (**sem** `--owner=0`), ordem `LC_ALL=C`.
+  `--owner=0` apagava contas reais: `/home/kolin` saía `0/0` modo `0700` e o
+  usuário não lia o próprio home. Use `kolin_normalize_owners` para mapear
+  apenas ids sem conta em `/etc/passwd`/`/etc/group`.
 - `date` corrente em qualquer artefato → use `kolin_iso_utc "$KOLIN_BUILD_EPOCH"`.
 - Snapshot Debian tem `Valid-Until` no passado → `[check-valid-until=no]` nos
   `sources.list` (escopo por repositório; a opção global por host **não** funciona).
@@ -77,6 +80,25 @@ devem ir para background com log em arquivo e ser acompanhados por `tail`.
 
 O registro no `binfmt_misc` é volátil: um resume do sandbox perde-o; reexecute
 o registro antes de qualquer build/chroot arm64.
+
+## Imagens distribuíveis (FASE 8)
+
+- Gerar a imagem de disco: `sudo bash build.sh --with-image` (opt-in, como o
+  desktop). O estágio `85-image.sh` roda depois de `70-rootfs.sh`.
+- **Sem `loop device`**: contêiner não tem `/dev/loop*` nem `CAP_MKNOD`. A
+  imagem é montada com `parted` + `mke2fs -E offset=… -d <rootfs>` +
+  `mformat`/`mcopy` (mtools aceita `imagem@@offset`).
+- `grub-mkstandalone` roda **dentro do rootfs arm64** (módulos `arm64-efi` só
+  existem lá). O `objcopy` do host x86 não lê ELF aarch64 — não tente.
+- Testar o boot de verdade, não só inspecionar arquivos:
+  `sudo bash scripts/host/qemu-boot.sh --image output/kolinos-*.img`
+  (ou `--rootfs ./rootfs` via virtio-9p, que dispensa imagem).
+  Sem KVM, o boot TCG leva minutos; o script espera um marcador no serial.
+- Não deixe o fstab da imagem vazar para o rootfs: o estágio escreve, usa e
+  **restaura** o fstab vazio, senão o `tar`/ISO herdam entradas inválidas.
+- `/dev/null` como arquivo comum já apareceu em artefato distribuído: o
+  `chroot` sem `/dev` montado transforma `>/dev/null` em arquivo. `kolin_fix_dev`
+  remove e o devtmpfs/proot recriam no boot.
 
 ## Testar o tema gráfico (FASE 7)
 

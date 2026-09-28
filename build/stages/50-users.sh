@@ -30,6 +30,18 @@ stage_main() {
     [ -n "$hash" ] || die "falha ao gerar o hash da senha (openssl)"
     kolin_run "$r" "usermod -p '$hash' '$u'"
 
+    # useradd runs under qemu-user (or proot) because the target is aarch64, so
+    # the host sees the new home as owned by the *host* uid, not the target's.
+    # Without this the archive would ship /home/<user> as root:root with mode
+    # 0700 — the user could not read their own home. Use the numeric ids from
+    # the target's passwd: the names do not resolve on the host.
+    local uid gid
+    uid="$(kolin_run "$r" "id -u '$u'")"
+    gid="$(kolin_run "$r" "id -g '$u'")"
+    [ -n "$uid" ] && [ -n "$gid" ] || die "não foi possível resolver uid/gid de '$u'"
+    chown -R "$uid:$gid" "$r/home/$u"
+    [ -d "$r/var/mail" ] && chown "$uid:$gid" "$r/var/mail/$u" 2>/dev/null || true
+
     # Passwordless sudo for the default user — convenient in proot, and easy to
     # audit. Remove /etc/sudoers.d/90-kolinos on hardened installs.
     mkdir -p "$r/etc/sudoers.d"

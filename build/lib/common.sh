@@ -149,6 +149,86 @@ kolin_stamp_tree() {
         warn "normalização de mtime falhou em alguns caminhos"
 }
 
+# ---------------------------------------------------------------------------
+# Ownership normalisation (runs right before tar).
+#
+# The build runs as root, but files created by shell redirection (cat >, cp,
+# install -d) inherit the *host's* uid/gid, which has no account inside the
+# target — so /etc/kolinos, /root/.bashrc and friends would ship as uid 10001.
+# The opposite mistake is just as bad: tar --owner=0 erases ids that ARE real
+# accounts, leaving /home/<user> owned by root (mode 0700, so the user cannot
+# read their own home) and apt's sandbox dirs without _apt.
+#
+# So: map every id with no matching account in the rootfs to root:root, and
+# leave the rest untouched. Deterministic, so reproducible builds still hold.
+# ---------------------------------------------------------------------------
+kolin_normalize_owners() {
+    local r="$1"
+    local uid gid changed=0
+    local -A valid_u=() valid_g=()
+
+    while IFS=: read -r _ _ u _; do [ -n "$u" ] && valid_u["$u"]=1; done < "$r/etc/passwd"
+    while IFS=: read -r _ _ g _; do [ -n "$g" ] && valid_g["$g"]=1; done < "$r/etc/group"
+
+    for uid in $(find "$r" -xdev -printf '%U\n' 2>/dev/null | sort -u); do
+        [ -n "${valid_u[$uid]:-}" ] && continue
+        find "$r" -xdev -uid "$uid" -exec chown -h 0 {} + 2>/dev/null || true
+        changed=1
+    done
+    for gid in $(find "$r" -xdev -printf '%G\n' 2>/dev/null | sort -u); do
+        [ -n "${valid_g[$gid]:-}" ] && continue
+        find "$r" -xdev -gid "$gid" -exec chgrp -h 0 {} + 2>/dev/null || true
+        changed=1
+    done
+    [ "$changed" = 1 ] && log "donos normalizados (ids do host → root:root)"
+    return 0
+}
+
+# ---------------------------------------------------------------------------
+# /dev hygiene.
+#
+# A rootfs built in a container cannot create device nodes (no CAP_MKNOD), and
+# debootstrap reports it as "Could not create /dev/ptmx". Worse, a chroot that
+# did not get /dev bind-mounted lets /dev/null degrade into a regular file that
+# silently swallows output — which then ships inside the archive. Never ship a
+# regular file where a device belongs: drop those paths, then recreate the nodes
+# when the kernel allows it (a real-root build); otherwise devtmpfs or proot
+# provide them at runtime.
+# ---------------------------------------------------------------------------
+kolin_fix_dev() {
+    local r="$1" d
+    [ -d "$r/dev" ] || mkdir -p "$r/dev"
+
+    for d in null zero full random urandom tty console; do
+        if [ -e "$r/dev/$d" ] && [ ! -c "$r/dev/$d" ]; then
+            warn "/dev/$d é arquivo comum (não device node) — removendo"
+            rm -f "$r/dev/$d"
+        fi
+    done
+
+    if [ -z "${_KOLIN_MKNOD_OK:-}" ]; then
+        if mknod "$r/dev/.kolinos-mknod-test" c 1 3 2>/dev/null; then
+            rm -f "$r/dev/.kolinos-mknod-test"; _KOLIN_MKNOD_OK=1
+        else
+            _KOLIN_MKNOD_OK=0
+        fi
+    fi
+
+    mkdir -p "$r/dev/pts" "$r/dev/shm"
+    if [ "$_KOLIN_MKNOD_OK" = 1 ]; then
+        mknod -m 666 "$r/dev/null"    c 1 3 || true
+        mknod -m 666 "$r/dev/zero"    c 1 5 || true
+        mknod -m 666 "$r/dev/full"    c 1 7 || true
+        mknod -m 666 "$r/dev/random"  c 1 8 || true
+        mknod -m 666 "$r/dev/urandom" c 1 9 || true
+        mknod -m 666 "$r/dev/tty"     c 5 0 || true
+        mknod -m 600 "$r/dev/console" c 5 1 || true
+    else
+        log "/dev: mknod indisponível (container sem CAP_MKNOD); devtmpfs/proot criam os nós no boot"
+    fi
+    chmod 1777 "$r/dev/shm" 2>/dev/null || true
+}
+
 # Drop documentation / man pages (except copyright) at unpack time so every
 # package installed afterwards stays small. Must run BEFORE debootstrap's
 # second stage. Skipped when KOLIN_SLIM=0 (build.sh --full).

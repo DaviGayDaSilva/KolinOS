@@ -27,6 +27,13 @@ stage_main() {
 EOF
     chmod 0644 "$r/etc/resolv.conf"
 
+    # A regular file where a device node belongs must never ship (see the helper).
+    kolin_fix_dev "$r"
+
+    # Files created by redirection carry the host's uid/gid; tar would then either
+    # ship an id with no account or flatten real accounts to root. Fix the tree.
+    kolin_normalize_owners "$r"
+
     if [ "$KOLIN_KEEP_QEMU" != 1 ]; then
         kolin_remove_qemu "$r"
     fi
@@ -40,9 +47,10 @@ EOF
     local tarball="$KOLIN_OUTPUT_DIR/kolinos-${KOLIN_VERSION}-${KOLIN_CODENAME_LOWER}-${KOLIN_ARCH}.tar.xz"
 
     # Reproducibility: stable entry order (LC_ALL=C), fixed mtime, no owner names
-    # (root:root is implied by uid/gid 0). --xattrs keeps security capabilities.
-    # pax format with atime/ctime deleted: otherwise tar records the read time,
-    # which changes on every run.
+    # (uid/gid stay numeric — never --owner=0, which would erase the accounts
+    # kolin_normalize_owners just validated). --xattrs keeps security
+    # capabilities. pax format with atime/ctime deleted: otherwise tar records
+    # the read time, which changes on every run.
     log "empacotando $tarball ..."
     (
         cd "$r" || exit 1
@@ -50,7 +58,7 @@ EOF
             | LC_ALL=C sort -z \
             | tar --null --files-from=- --format=pax \
                   --pax-option=exthdr.name=%d/PaxHeaders/%f,delete=atime,delete=ctime \
-                  --owner=0 --group=0 --numeric-owner \
+                  --numeric-owner \
                   --mtime="@$KOLIN_BUILD_EPOCH" \
                   --xattrs --xattrs-include='*' \
                   -cJf "$tarball"
