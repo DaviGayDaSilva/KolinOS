@@ -100,6 +100,26 @@ o registro antes de qualquer build/chroot arm64.
   `chroot` sem `/dev` montado transforma `>/dev/null` em arquivo. `kolin_fix_dev`
   remove e o devtmpfs/proot recriam no boot.
 
+## Hardware real (FASE 10)
+
+- Perfis em `config/devices/*.conf` (chaves `KOLIN_DEVICE_*`); um perfil é lido
+  em subshell para não poder alterar o estado do build. `bash build.sh
+  --list-devices`, `--device rpi4`. Perfis `uefi`/`sbc` implicam `--with-image`.
+- `90-device.sh` roda **depois** do 85 e da compressão (`95-compress.sh`),
+  porque ele modifica a própria imagem (dtbs na ESP, `grub-dtb.cfg`). Se a
+  compressão voltar para o 85, o `.img.xz` passa a descrever bytes que o 90 já
+  mudou — checksum válido, artefato errado.
+- Os offsets da ESP vêm de `output/.kolinos-image-layout` (gravado pelo 85), não
+  de literais duplicados no 90.
+- `mkbootimg` é ferramenta de **host**; nunca em `KOLIN_DEVICE_EXTRA_PKGS`, que
+  é instalado no alvo arm64.
+- `kolinos-bootimg` valida o `boot.img` gerado (parser independente; `make test`
+  cobre o caso negativo). O `boot.img` Android prova formato, não boot: o kernel
+  Debian genérico não tem driver de SoC de telefone.
+- `qemu-boot.sh` espera por `login:|Reached target`; o marcador antigo
+  `KolinOS` casava com o próprio menu GRUB e dava falso positivo antes do
+  userspace. Boot TCG até `kolinos login:` leva alguns minutos — teste de verdade.
+
 ## Testar o tema gráfico (FASE 7)
 
 O tema "Corvo Glass" pode ser validado **sem build e sem root**, no próprio
