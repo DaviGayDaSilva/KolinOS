@@ -141,8 +141,23 @@ ISO antiga. O `make-iso.sh` atualiza a linha da ISO no `SHA256SUMS` pela última
 coluna do arquivo (as linhas do tar podem ter prefixo `./`).
 
 ## Push para o GitHub
-O `GITHUB_TOKEN` do sandbox é um token de integração **somente-leitura** para
-este repositório (`Resource not accessible by integration` no git push). Para
-publicar, use um PAT com permissão de escrita. Depois do push, remova o token
-da URL do remote (`git remote set-url origin https://github.com/OWNER/REPO.git`).
+O `GITHUB_TOKEN` do sandbox é um **user-to-server token de GitHub App**
+(prefixo `ghu_`) cuja instalação só tem **Metadata: read** neste repositório.
+Ele autentica como o dono e a API até reporta `permissions.push: true` (isso é a
+permissão do *usuário*, não da *instalação*), mas toda escrita falha com
+`Resource not accessible by integration` (403) — no git push e em qualquer
+endpoint de escrita da API REST. Confirme o escopo com
+`curl -D - -o /dev/null -H "Authorization: Bearer $GITHUB_TOKEN" \
+ https://api.github.com/repos/OWNER/REPO | grep x-accepted-github-permissions`.
+
+Para publicar, use um **PAT clássico** com escopo `repo` (prefixo `ghp_`):
+
+```sh
+GIT_TERMINAL_PROMPT=0 git -c credential.helper= push \
+  "https://<PAT>@github.com/OWNER/REPO.git" main:main
+```
+
+O remote `origin` fica **sem** token: passe o PAT só na URL do comando, para
+não gravá-lo em `.git/config`. Depois do push, confirme com
+`git fetch && git status -sb` que `main` está sincronizado.
 
