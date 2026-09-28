@@ -180,18 +180,24 @@ EOF
 # <file system>  <mount point>  <type>  <options>  <dump>  <pass>
 EOF
 
+    # Record the layout for later stages (stage 90 patches this image for a
+    # specific board). Hardcoding the offsets there would silently break the
+    # moment this stage changes its partition sizes.
+    cat > "$out/.kolinos-image-layout" <<EOF
+# Gerado por build/stages/85-image.sh — não editar à mão.
+KOLIN_IMG_FILE=${img}
+KOLIN_IMG_ESP_START_MB=${esp_start}
+KOLIN_IMG_ESP_MB=${esp_mb}
+KOLIN_IMG_ROOT_START_MB=${root_start}
+KOLIN_IMG_ROOT_UUID=${root_uuid}
+EOF
+
     # Deterministic timestamps for the image itself.
     touch -d "@$KOLIN_BUILD_EPOCH" "$img" 2>/dev/null || true
 
-    # Sparse files and zeroed free space compress well; a raw 1.6 GiB image is
-    # unusable on a phone, so ship an xz-compressed copy next to it. The raw
-    # image stays for direct 'dd' and for QEMU.
-    if [ "${KOLIN_IMAGE_COMPRESS:-1}" = 1 ] && have xz; then
-        log "comprimindo a imagem (xz) ..."
-        xz -T0 -1 -c "$img" > "$img.xz"
-        touch -d "@$KOLIN_BUILD_EPOCH" "$img.xz" 2>/dev/null || true
-        log "imagem comprimida: $img.xz ($(human_size "$img.xz"))"
-    fi
+    # Compression deliberately does NOT happen here: stage 90 may still patch
+    # the image (board device trees), and compressing twice costs minutes on a
+    # 1.4 GiB image. Stage 95 compresses once, after all writers are done.
 
     if [ "$bootable" = 1 ]; then
         log "imagem inicializável (UEFI): $img  ($(human_size "$img"))"

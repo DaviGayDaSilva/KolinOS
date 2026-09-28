@@ -1,0 +1,19 @@
+# KolinOS boot menu entry with a board device tree (FASE 10, stage 90).
+#
+# Rendered per device profile. On a board whose firmware does not hand the
+# kernel a device tree — a Raspberry Pi under UEFI, for instance — GRUB must
+# load one explicitly with the `devicetree` command, before `linux`. Without it
+# the kernel has no description of the hardware and cannot bring up storage.
+#
+# This file is installed on the ESP as /EFI/kolinos/grub-dtb.cfg. The standalone
+# GRUB EFI binary embeds its own menu, so this file is read only by a GRUB that
+# loads an external config (U-Boot, a chainloaded GRUB). It is shipped because
+# it documents the exact wiring and is directly usable: the root UUID below is
+# the real one, not a placeholder.
+
+menuentry "KolinOS @KOLIN_VERSION@ (@KOLIN_DEVICE_LABEL@)" --id kolinos-@KOLIN_DEVICE_ID@ {
+    search --no-floppy --fs-uuid --set=root @KOLIN_ROOT_UUID@
+    devicetree @KOLIN_DTB_PATH@
+    linux /vmlinuz @KOLIN_DEVICE_CMDLINE@
+    initrd /initrd.img
+}

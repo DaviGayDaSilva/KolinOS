@@ -278,19 +278,60 @@ Falta ainda:
 
 ---
 
-## FASE 10 — Suporte a hardware real ⬜
+## FASE 10 — Suporte a hardware real 🔵
 
 **Objetivo:** o KolinOS rodar em um aparelho, não só em container.
 
-Isto é o que exige **muito mais** do que as fases anteriores:
+O que existe (`config/devices/`, `build/stages/90-device.sh`,
+`build/stages/95-compress.sh`, `src/kolinos-bootimg/`):
 
-- **Kernel Linux próprio** compilado para o hardware (ou um kernel genérico
-  com device tree adequado).
-- **Bootloader**: no Android, `fastboot`/`aboot` com bootloader desbloqueado;
-  alternativas: dispositivos com suporte a mainline, `postmarketOS`, ou placas
-  SBC (Raspberry Pi, etc.).
-- **Drivers**: GPU, modem, Wi-Fi, touch — o maior esforço de portabilidade.
+- **Perfis de dispositivo** (`config/devices/*.conf`) descrevem um alvo por
+  chaves `KOLIN_DEVICE_*`: bootloader, diretório e lista de device trees,
+  cmdline, pacotes extras. Um perfil é lido em subshell, nunca no shell do
+  build, para que não possa alterar o estado do build.
+- **`--device NAME`** (e `--list-devices`) no `build.sh`. Para perfis `uefi` e
+  `sbc` implica `--with-image`; perfis `android` geram `boot.img` e não precisam
+  de imagem de disco.
+- **Estágio 90** gera o artefato por alvo: para `sbc`, copia as device trees do
+  kernel Debian para a ESP (lendo os offsets do layout que o estágio 85 gravou,
+  não de constantes duplicadas), valida cada dtb com `dtc` e escreve um
+  `grub-dtb.cfg` com o UUID real da raiz; para `android`, chama `mkbootimg` e
+  valida o resultado com `kolinos-bootimg`.
+- **Estágio 95** comprime a imagem **uma única vez**, depois do 90. Comprimir no
+  85 (como na FASE 8) deixaria um `.img.xz` descrevendo uma imagem que o 90 já
+  modificou — checksum válido, bytes diferentes.
+- **`kolinos-bootimg`** (C nativo) lê e valida `boot.img` AOSP v0/v1/v2 com um
+  parser independente do `mkbootimg`: um erro de layout passaria pelo gerador e
+  seria recusado pelo `fastboot`, então validar no build pega o problema antes.
+- **`config/devices/report.sh`** diz o que o host atual consegue fazer.
+
+Verificação (o que foi realmente testado):
+
+- Build do `boot.img` para `android-generic`: gerado e **validado** por
+  `kolinos-bootimg` (header v2, página 4096, dtb incluída, sem truncamento).
+- Build da imagem para `rpi4`: dtbs `bcm2711` validadas com `dtc` e presentes na
+  ESP (conferido extraindo a FAT do offset 1 MiB com `mdir`); `grub-dtb.cfg`
+  renderizado com o UUID real.
+- **Boot real da imagem no QEMU** (EDK2 → GRUB → kernel → systemd), chegando a
+  `kolinos login:` com o motd do KolinOS. O `qemu-boot.sh` foi corrigido: o
+  marcador padrão `KolinOS` casava com o próprio menu GRUB e dava falso positivo
+  antes do userspace.
+
+Limites conhecidos (e por quê):
+
+- O `boot.img` **quase certamente não inicializa** um telefone: o kernel Debian
+  genérico não tem os drivers do SoC nem a DTB do aparelho. O artefato prova o
+  formato; portar um kernel é outro trabalho.
+- O Pi 4 exige **EEPROM com UEFI** (`rpi-eeprom-update`) ou U-Boot encadeado; o
+  estágio não grava cartão nem atualiza EEPROM.
+- Boot de Pi e de celular **não é testável em contêiner**. É limitação de
+  hardware, não de processo.
+
+Falta ainda:
+
+- Kernel próprio por SoC e as DTB reais dos aparelhos-alvo.
+- `flash-kernel`/`u-boot-menu` no rootfs para boards que usam U-Boot.
 - Instalador em `.img` para cartão/partição e recuperação via `fastboot`.
 
-> Nada nesta fase é possível apenas com Termux ou proot. É um projeto de
-> portabilidade de kernel. Veja `docs/LIMITATIONS.md`.
+> Nada nesta fase roda em Termux ou proot sozinho. Ver `docs/PHASE10.md` e
+> `docs/LIMITATIONS.md`.

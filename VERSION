@@ -28,10 +28,18 @@ KOLIN_ARCH="arm64"
 KOLIN_HOME_URL="https://github.com/DaviGayDaSilva/KolinOS"
 KOLIN_SUPPORT_URL="https://github.com/DaviGayDaSilva/KolinOS/issues"
 KOLIN_BUG_URL="https://github.com/DaviGayDaSilva/KolinOS/issues"
-# KolinOS's own APT repository (FASE 5). Empty by default: a local build runs
-# apt from a file:// mirror the build sets up for itself, so no network is
-# needed. Set to a real URL for the published repo (FASE 9).
+# KolinOS's own APT repository (FASE 5/9).
+# Empty by default: a local build runs apt from a file:// mirror the build sets
+# up for itself, so no network is needed and no external host is contacted.
+# Set to the published repository URL to have the rootfs ship a usable
+# kolinos.sources. repo/scripts/publish-repo.sh publishes repo/public/ to the
+# GitHub Pages site named below.
 KOLIN_APT_REPO_URL=""
+
+# GitHub Pages site that serves the published APT repository (FASE 9).
+# GitHub lowercases the host, and the path is the repository name verbatim.
+KOLIN_PAGES_HOST="davigaydasilva.github.io"
+KOLIN_PAGES_PATH="KolinOS"
 
 # Default identity for the generated image.
 KOLIN_HOSTNAME="kolinos"

@@ -34,7 +34,7 @@ LDFLAGS += -static
 endif
 
 BINDIR := build/native
-TOOLS  := kolinos-hw kolinos-fetch
+TOOLS  := kolinos-hw kolinos-fetch kolinos-bootimg
 
 # common.o is linked into every tool.
 OBJS := src/common/common.c
@@ -73,3 +73,11 @@ test:
 	@build/native-host/kolinos-hw --json
 	@echo "=== sem tty: sem escapes ANSI ==="
 	@build/native-host/kolinos-hw | grep -q $$'\033' && { echo "FALHA: escape ANSI na saída"; exit 1; } || echo "OK"
+	@echo "=== kolinos-bootimg: casos negativos e positivos ==="
+	@build/native-host/kolinos-bootimg info >/dev/null 2>&1 && \
+		{ echo "FALHA: uso inválido deveria retornar 2"; exit 1; } || true
+	@printf 'nao é boot.img' > /tmp/kolinos-notboot.$$$$ && \
+		build/native-host/kolinos-bootimg verify /tmp/kolinos-notboot.$$$$ >/dev/null 2>&1 && \
+		{ echo "FALHA: arquivo sem magic foi aceito"; rm -f /tmp/kolinos-notboot.$$$$; exit 1; } || \
+		echo "OK: arquivo sem magic rejeitado"
+	@rm -f /tmp/kolinos-notboot.$$$$

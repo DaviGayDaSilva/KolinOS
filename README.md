@@ -11,13 +11,17 @@ desenvolvimento, execução dentro do **Termux** usando `proot` (sem root).
 - **Arquitetura principal:** arm64 / aarch64
 - **Gerenciador de pacotes:** APT/DPKG (é Debian por dentro)
 
-> Estado atual: **Fases 1 a 7** concluídas. Veja [`docs/PHASES.md`](docs/PHASES.md)
+> Estado atual: **Fases 1 a 9** concluídas; **Fase 10** (hardware real) em
+> andamento — perfis de dispositivo, `boot.img` Android e device trees de board
+> já são gerados e validados. Veja [`docs/PHASES.md`](docs/PHASES.md)
 > para o roadmap, [`docs/PHASE2.md`](docs/PHASE2.md) (base mínima),
 > [`docs/PHASE3.md`](docs/PHASE3.md) (identidade visual),
 > [`docs/PHASE4.md`](docs/PHASE4.md) (build reproduzível),
 > [`docs/PHASE5.md`](docs/PHASE5.md) (pacotes próprios `.deb`),
 > [`docs/PHASE6.md`](docs/PHASE6.md) (sistema de instalação),
-> [`docs/PHASE7.md`](docs/PHASE7.md) (interface gráfica "Corvo Glass"), além de
+> [`docs/PHASE7.md`](docs/PHASE7.md) (interface gráfica "Corvo Glass"),
+> [`docs/PHASE8.md`](docs/PHASE8.md) (imagens distribuíveis),
+> [`docs/PHASE10.md`](docs/PHASE10.md) (hardware real), além de
 > [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md) para o que funciona (e o que não
 > funciona) em Termux/proot/root.
 

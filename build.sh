@@ -26,6 +26,11 @@
 #                      FAT32 ESP with GRUB/kernel/initrd + ext4 rootfs. Opt-in
 #                      like the desktop: the base image stays lean. Needs
 #                      linux-image-arm64 and grub-efi-arm64-bin in the rootfs.
+#   --device NAME      Build artifacts for a device profile in config/devices/
+#                      (FASE 10): generic-uefi, rpi4, android-generic. Implies
+#                      --with-image for uefi/sbc profiles. Without it, no
+#                      hardware-specific artifact is produced.
+#   --list-devices     List the available device profiles and exit.
 #   --with-desktop     Also install the Corvo Glass graphical session
 #                      (kolinos-desktop, stage 35 + graphics stage 65). Off by
 #                      default: it pulls in X11 from the Debian mirror and adds
@@ -52,6 +57,8 @@ KOLIN_ONLY_STAGES=""
 KOLIN_CUSTOM_DEBS=1
 KOLIN_DESKTOP=0
 KOLIN_IMAGE=0
+KOLIN_DEVICE=""
+KOLIN_DEVICES_DIR="$SELF_DIR/config/devices"
 KOLIN_OUTPUT_DIR="$KOLIN_ROOT_DIR/output"
 KOLIN_ROOTFS="$KOLIN_ROOT_DIR/rootfs"
 # Reproducibility overrides (empty = use VERSION).
@@ -62,7 +69,7 @@ KOLIN_SNAPSHOT_HOST="http://snapshot.debian.org"
 
 DEB_ARCH=""
 
-usage() { sed -n '2,31p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; }
+usage() { sed -n '2,46p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; }
 
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -80,6 +87,19 @@ while [ $# -gt 0 ]; do
         --with-desktop)   KOLIN_DESKTOP=1; shift ;;
         --with-image)     KOLIN_IMAGE=1; shift ;;
         --no-image)       KOLIN_IMAGE=0; shift ;;
+        --device)         KOLIN_DEVICE="$2"; shift 2 ;;
+        --list-devices)
+            printf 'Perfis de dispositivo em %s:\n' "$KOLIN_DEVICES_DIR"
+            for c in "$KOLIN_DEVICES_DIR"/*.conf; do
+                [ -f "$c" ] || continue
+                id="$(basename "$c" .conf)"
+                # Read only the label, in a subshell, so a profile cannot alter
+                # this shell's state by being sourced.
+                label="$(unset KOLIN_DEVICE_LABEL; . "$c" >/dev/null 2>&1; printf '%s' "${KOLIN_DEVICE_LABEL:-}")"
+                printf '  %-18s %s\n' "$id" "$label"
+            done
+            exit 0
+            ;;
         --force)          KOLIN_FORCE=1; shift ;;
         --keep-qemu)      KOLIN_KEEP_QEMU=1; shift ;;
         --slim)           KOLIN_SLIM=1; shift ;;
@@ -110,6 +130,40 @@ export KOLIN_DESKTOP KOLIN_IMAGE
 export KOLIN_ROOTFS KOLIN_OUTPUT_DIR
 export KOLIN_CODENAME_LOWER
 export KOLIN_SNAPSHOT KOLIN_SNAPSHOT_HOST
+
+# A device profile is validated here, before any work starts: a typo in
+# --device should fail in the first second, not after a 20-minute rootfs build.
+# Validation is a plain file check — the profile itself is sourced by stage 90.
+if [ -n "$KOLIN_DEVICE" ]; then
+    [ -f "$KOLIN_DEVICES_DIR/$KOLIN_DEVICE.conf" ] || {
+        printf 'perfil de dispositivo desconhecido: %s\n' "$KOLIN_DEVICE" >&2
+        printf 'disponíveis:\n' >&2
+        for c in "$KOLIN_DEVICES_DIR"/*.conf; do
+            [ -f "$c" ] || continue
+            printf '  %s\n' "$(basename "$c" .conf)" >&2
+        done
+        exit 1
+    }
+fi
+export KOLIN_DEVICE KOLIN_DEVICES_DIR
+
+# A uefi/sbc profile only produces a disk image, so selecting one without
+# --with-image would silently build nothing device-specific. Read `kind` in a
+# subshell and turn the image on instead. android profiles produce a boot.img
+# and need no disk image.
+if [ -n "$KOLIN_DEVICE" ]; then
+    _dev_kind="$(unset KOLIN_DEVICE_KIND; . "$KOLIN_DEVICES_DIR/$KOLIN_DEVICE.conf" >/dev/null 2>&1; printf '%s' "${KOLIN_DEVICE_KIND:-}")"
+    case "$_dev_kind" in
+        uefi|sbc)
+            if [ "$KOLIN_IMAGE" != 1 ]; then
+                log "perfil $_dev_kind requer imagem de disco; ativando --with-image"
+                KOLIN_IMAGE=1
+                export KOLIN_IMAGE
+            fi
+            ;;
+    esac
+    unset _dev_kind
+fi
 
 # Resolve the fixed build timestamp once, before any artifact is written.
 KOLIN_BUILD_EPOCH="$(kolin_build_epoch)"

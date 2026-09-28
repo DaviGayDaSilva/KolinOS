@@ -29,7 +29,7 @@
 #   --cpus N          Guest CPUs (default: 2)
 #   --timeout SEC     Give up after SEC seconds (default: 420)
 #   --expect REGEX    Wait for this regex on the serial console
-#                     (default: 'KolinOS|login:|Reached target')
+#                     (default: 'login:|Reached target')
 #   --log FILE        Where to tee the serial output (default: output/qemu-boot.log)
 #   --extra ARGS      Extra QEMU arguments (single string)
 #   -h, --help        Show this help
@@ -45,7 +45,7 @@ TARGET=""
 RAM=2048
 CPUS=2
 TIMEOUT=420
-EXPECT='KolinOS|login:|Reached target'
+EXPECT='login:|Reached target'
 LOG="$ROOT_DIR/output/qemu-boot.log"
 EXTRA=""
 
