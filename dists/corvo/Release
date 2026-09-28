@@ -1,0 +1,27 @@
+Architectures: arm64
+Codename: corvo
+Components: main
+Date: Mon, 28 Sep 2026 15:05:27 UTC
+Label: KolinOS
+Origin: KolinOS
+Suite: corvo
+MD5Sum:
+ c3c3d198df98fe841d51c07b9f2b3e3b              134 Release
+ 6cf1c8d451231c0e7d501569b59a6028             5137 main/binary-arm64/Packages
+ a4a7a30eb598e3ab960ec697505194c6             2257 main/binary-arm64/Packages.gz
+ 1467ac9975c908021e569a71464b7728             2320 main/binary-arm64/Packages.xz
+SHA1:
+ a763525740a89f6180a94ede932432f905683a11              134 Release
+ 84f4ad0deffd997852f1099339fb1b750c1eb386             5137 main/binary-arm64/Packages
+ 9709694ed3ad5e742be8870255c425869821cb55             2257 main/binary-arm64/Packages.gz
+ dc33e6d245ea9ecfaba58af1f01096139e45c39f             2320 main/binary-arm64/Packages.xz
+SHA256:
+ 0418fd9c0d593def8ce3327cb848c962623350d72d3defd99272d141784ead6e              134 Release
+ 215c3c49ae23db0c0b59a74a5b768dff8c55a23d5c443426dc29554646f38255             5137 main/binary-arm64/Packages
+ 94b61994948dae71df1c91bb97b49a42a91536c170f5b7fca78fce45ce9fda5d             2257 main/binary-arm64/Packages.gz
+ 11345379e076cda94493653d0aea86493473ea526250bb90655446839eb2530c             2320 main/binary-arm64/Packages.xz
+SHA512:
+ 010ba4a7322f4a3578524332821ffc4461a17d81e06a93ce695839dbe711f2d0d6074e3945bc0131a73ac51a07adc5aceb35ab22735186bde3a3072488cca522              134 Release
+ 8c1e3fbfefd23bf5e753b380184ce70d324729b67d237cd404d5def1cc7f119d65e35983865231d62e087f0209e5e3e3b0e69a279135fa5b3eb64500ba43294d             5137 main/binary-arm64/Packages
+ 1870551dab38450cd57762df63473f7611d5e0a5eafdea5c24013ac0c238021af7fbf864f5fc2db38870597aa04c0a82b558ee2b6133e6e982747ad35f76a84e             2257 main/binary-arm64/Packages.gz
+ c481f562788a2a85ce35277dd4c19e2719b4396dcb30a1f09330af8ab7c00b0931454640d2ef30ba749baf51d9b40ad47f982a0675851ee19ad05435cf92f4e5             2320 main/binary-arm64/Packages.xz

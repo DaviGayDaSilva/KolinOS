@@ -1,0 +1,120 @@
+Package: kolinos-base
+Version: 1.0.0-1
+Architecture: arm64
+Maintainer: KolinOS <dev@kolinos.org>
+Installed-Size: 16
+Depends: kolinos-tools, kolinos-branding, sudo, ca-certificates, bash-completion
+Suggests: kolinos-desktop, kolinos-theme
+Filename: pool/main/kolinos-base_1.0.0-1_arm64.deb
+Size: 1212
+MD5sum: d6be27d4f7bd52d5c7a3f6971dfb45b0
+SHA1: 014af87471c3cc7d11b0e701534f41e57026541b
+SHA256: e8623ba75b57d54b237eac79289eee83fd2fa19c1e7d02778ae92c4c04a8f8d8
+Section: metapackages
+Priority: optional
+Description: KolinOS base metapackage
+ Marks a system as KolinOS and pulls the components that make it one: the
+ KolinOS tools, the visual identity and the small set of Debian packages the
+ distribution expects to be present. The graphical session (kolinos-desktop)
+ is only a Suggests: a headless phone/container install stays lean, and the
+ desktop is added explicitly with `apt install kolinos-desktop`.
+
+Package: kolinos-branding
+Version: 1.0.0-1
+Architecture: arm64
+Maintainer: KolinOS <dev@kolinos.org>
+Installed-Size: 1364
+Depends: bash
+Filename: pool/main/kolinos-branding_1.0.0-1_arm64.deb
+Size: 1222340
+MD5sum: 47c76a005885546bd285387ac4303ff0
+SHA1: a34932a7a553a7082088d89c4ca804959fc5eb67
+SHA256: bbf41af35c83fb67b5a5e27bc99524c65c9140a3a55e8cd82551123992de5ac1
+Section: admin
+Priority: optional
+Description: KolinOS visual identity assets
+ Logo, colour palette and shell colour helpers used by KolinOS tooling and by
+ its motd. Installed under /etc/kolinos/branding. Also ships the graphical
+ wallpaper, logo and icon assets rendered from the SVG sources (Corvo Glass,
+ FASE 7) under /usr/share/backgrounds/kolinos and /usr/share/icons/hicolor.
+
+Package: kolinos-desktop
+Version: 1.0.0-1
+Architecture: arm64
+Maintainer: KolinOS <dev@kolinos.org>
+Installed-Size: 16
+Depends: kolinos-theme, kolinos-tools,
+ openbox, picom, tint2, xterm, feh, rofi, xinit, x11-xserver-utils,
+ libgl1-mesa-dri, adwaita-icon-theme, fonts-inter, fonts-jetbrains-mono
+Recommends: pcmanfm, gtk2-engines-murrine
+Suggests: lightdm, lightdm-gtk-greeter
+Filename: pool/main/kolinos-desktop_1.0.0-1_arm64.deb
+Size: 1796
+MD5sum: e2b545a52440c6f5ed0a9bad3332ebc6
+SHA1: f29969b6507bec207ab2ba2781e78e3de742f45c
+SHA256: acfb9b29bc3f5cbda5e2b95092b077013df12a42fe136112922850c8303851e4
+Section: x11
+Priority: optional
+Description: KolinOS "Corvo Glass" lightweight desktop
+ Metapackage that pulls in the KolinOS graphical session: the openbox window
+ manager, the picom compositor (which produces the frosted-glass look), the
+ tint2 panel, a terminal, the rofi launcher and the Corvo Glass theme.
+ .
+ It is deliberately light (X11, no full desktop environment) so it can run on
+ phones and other low-RAM ARM64 devices. Starting the session requires an X
+ server: on real hardware an Xorg server or lightdm; under Termux the
+ Termux:X11 app. This package installs the desktop, it does not provide a
+ display server on its own.
+
+Package: kolinos-theme
+Version: 1.0.0-1
+Architecture: arm64
+Maintainer: KolinOS <dev@kolinos.org>
+Installed-Size: 152
+Depends: bash
+Recommends: picom, openbox, tint2, xterm
+Filename: pool/main/kolinos-theme_1.0.0-1_arm64.deb
+Size: 10732
+MD5sum: b3d77879ad590ee0b70d2df5654c253f
+SHA1: 96e32c3b4b4bac725c46232bf3755ee2a3b268d8
+SHA256: f0c86449f0362ce1e3522cfdbca4c013a7a0e959b4bec50b071c99f5ec76db66
+Section: x11
+Priority: optional
+Description: KolinOS "Corvo Glass" themes
+ The Corvo Glass visual identity as installed files: the GTK 2/3 themes
+ (/usr/share/themes/CorvoGlass), the openbox theme, the tint2 panel, the rofi
+ launcher theme, the terminal colour scheme and the desktop configuration
+ under /etc/xdg/kolinos. The wallpapers and logo are shipped by
+ kolinos-branding; the compositor (picom) that turns the translucent surfaces
+ into real frosted glass is provided by kolinos-desktop.
+
+Package: kolinos-tools
+Version: 1.0.0-1
+Architecture: arm64
+Maintainer: KolinOS <dev@kolinos.org>
+Installed-Size: 1568
+Depends: bash
+Filename: pool/main/kolinos-tools_1.0.0-1_arm64.deb
+Size: 300852
+MD5sum: cbb42c182bc72d40883f63645490f15c
+SHA1: d74e11e152d4213a0683b9af990b9eb0d1946146
+SHA256: c16ae062152bc7e25e4f0370b49df7094c351410dac1e76a49ddb75a05b1ea02
+Section: admin
+Priority: optional
+Description: KolinOS command-line tools
+ Small utilities shipped by the KolinOS distribution: kolinos-info (a
+ neofetch-style system summary with the KolinOS branding), kolinos-version
+ (name, version and codename), apt-kolinos (enable or disable the
+ distribution's own APT repository), kolinos-firstboot (the one-time setup
+ that runs after the system is installed), and the graphical session helpers
+ kolinos-session, kolinos-terminal, kolinos-wallpaper and kolinos-launcher
+ (FASE 7).
+ .
+ It also ships the native C tools cross-compiled from src/ (stage 32):
+ kolinos-fetch, the fetch-style summary that reads /etc/os-release,
+ /etc/kolinos/version and /etc/kolinos/branding/logo.txt in a single process,
+ and kolinos-hw, the hardware report that parses /proc and /sys for CPU,
+ memory, storage, thermal and load data. Both are statically linked for
+ aarch64, so they work inside proot and on a degraded rootfs without an
+ interpreter.
+
