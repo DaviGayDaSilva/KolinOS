@@ -17,3 +17,7 @@
 
 # Logs diversos
 wget-log*
+
+# Native C build output (stage 32).
+/build/native/
+/build/native-host/

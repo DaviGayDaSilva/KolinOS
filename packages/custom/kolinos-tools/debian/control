@@ -12,3 +12,11 @@ Description: KolinOS command-line tools
  that runs after the system is installed), and the graphical session helpers
  kolinos-session, kolinos-terminal, kolinos-wallpaper and kolinos-launcher
  (FASE 7).
+ .
+ It also ships the native C tools cross-compiled from src/ (stage 32):
+ kolinos-fetch, the fetch-style summary that reads /etc/os-release,
+ /etc/kolinos/version and /etc/kolinos/branding/logo.txt in a single process,
+ and kolinos-hw, the hardware report that parses /proc and /sys for CPU,
+ memory, storage, thermal and load data. Both are statically linked for
+ aarch64, so they work inside proot and on a degraded rootfs without an
+ interpreter.

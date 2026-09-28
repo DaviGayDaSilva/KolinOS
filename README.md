@@ -94,7 +94,13 @@ sudo bash scripts/host/qemu-boot.sh --image output/kolinos-1.0.0-corvo-arm64.img
 ```
 kolinos/
 ├── build.sh                 # orquestrador do build (roda os estágios em ordem)
+├── Makefile                 # compila as ferramentas nativas em C para ARM64
 ├── VERSION                  # identidade: nome, versão, codename, base Debian
+├── src/                     # código nativo em C (ver docs/NATIVE.md)
+│   ├── include/kolinos.h    #   declarações compartilhadas (sem deps fora da libc)
+│   ├── common/common.c      #   cores, /proc, tamanhos legíveis
+│   ├── kolinos-hw/          #   hardware: CPU, memória, discos, térmico, carga
+│   └── kolinos-fetch/       #   resumo do sistema lendo /etc/os-release de verdade
 ├── build/
 │   ├── lib/common.sh        # funções compartilhadas (chroot, QEMU, templates)
 │   └── stages/              # estágios independentes e reexecutáveis
@@ -102,6 +108,7 @@ kolinos/
 │       ├── 10-debootstrap.sh
 │       ├── 20-apt.sh
 │       ├── 30-packages.sh
+│       ├── 32-native.sh          # compila o C para ARM64 (Fase 8.5)
 │       ├── 35-packages.sh        # pacotes KolinOS (.deb) via APT (Fase 5)
 │       ├── 40-identity.sh
 │       ├── 50-users.sh

@@ -1,3 +1,4 @@
+#!/bin/sh
 # KolinOS — enable the distribution's own APT repository (FASE 5/9).
 #
 # The repo is normally disabled so a fresh KolinOS still works offline or when
