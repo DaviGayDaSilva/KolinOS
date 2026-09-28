@@ -31,6 +31,8 @@ tar -C "$ROOT" \
     --exclude='./repo/keys' \
     --exclude='*.tar.xz' \
     --exclude='*.iso' \
+    --exclude='*.img' \
+    --exclude='*.img.xz' \
     -cf - . | tar -C "$STAGE/$NAME" -xf -
 
 rm -f "$ZIP"

@@ -182,6 +182,15 @@ if [ "$KOLIN_NO_ISO" != 1 ]; then
     fi
 fi
 
+# The source ZIP is an artifact like any other, so it is rebuilt here rather
+# than by hand — a hand-built ZIP silently goes stale the moment the tree
+# changes, and it is the one artifact that is supposed to mirror the tree.
+if bash "$SELF_DIR/scripts/artifacts/make-source-zip.sh" "$KOLIN_OUTPUT_DIR"; then
+    log "ZIP do código-fonte gerado"
+else
+    warn "geração do ZIP falhou (os demais artefatos continuam válidos)"
+fi
+
 # Metadata last, so METADATA.txt and SHA256SUMS describe the final artifact set.
 if [ -n "$STAGE_METADATA" ]; then
     step "$(basename "$STAGE_METADATA")"

@@ -64,19 +64,28 @@ Flags úteis do `build.sh`:
 | `--snapshot STAMP` | fixa as versões Debian no `snapshot.debian.org` |
 | `--reproducible` | build bit-a-bit reprodutível (usa a data de `VERSION`) |
 | `--with-desktop` | instala também o desktop "Corvo Glass" (Fase 7) |
+| `--with-image` | gera também a imagem de disco inicializável `.img` + `.img.xz` (Fase 8) |
 | `--no-custom-debs` | não constrói/instala os pacotes KolinOS (Fase 5) |
 
 Resultado em `output/`:
 
 | Arquivo | O que é |
 |---|---|
-| `kolinos-1.0.0-corvo-arm64.tar.xz` | root filesystem KolinOS (arm64) |
+| `kolinos-1.0.0-corvo-arm64.tar.xz` | root filesystem KolinOS (arm64) — para Termux/proot, chroot, VM via 9p |
+| `kolinos-1.0.0-corvo-arm64.img` | imagem de disco **inicializável por UEFI** (GPT: ESP FAT32 + root ext4), com `--with-image` |
+| `kolinos-1.0.0-corvo-arm64.img.xz` | a mesma imagem comprimida, para gravar com `xz -d` + `dd` |
 | `kolinos-1.0.0-corvo-arm64.iso` | ISO **carrier** (rootfs + código-fonte) — **não inicializável** |
 | `kolinos-source-1.0.0-corvo.zip` | código-fonte completo do projeto |
 | `SHA256SUMS`, `SOURCE-SHA256SUMS`, `METADATA.txt` | checksums e metadados do build |
 
 Para usar no Termux, transfira o `.tar.xz` para o celular e rode
 `install/kolinos-install.sh`.
+
+Para testar o boot da imagem (no host, com QEMU):
+
+```sh
+sudo bash scripts/host/qemu-boot.sh --image output/kolinos-1.0.0-corvo-arm64.img
+```
 
 ---
 
