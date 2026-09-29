@@ -192,8 +192,10 @@ Opções úteis: `--arch`, `--suite`, `--mirror`, `--snapshot`, `--reproducible`
 - [`docs/PHASE5.md`](docs/PHASE5.md) — pacotes próprios `.deb` e repositório APT.
 - [`docs/PHASE6.md`](docs/PHASE6.md) — sistema de instalação (proot/dir/disk) e first boot.
 - [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md) — Termux vs proot vs root vs kernel.
-- [`docs/BUILD.md`](docs/BUILD.md) — construir, testar e entrar no sistema.
+- [`docs/QEMU.md`](docs/QEMU.md) — emular o sistema no QEMU (sem hardware).
 - [`docs/LIMBO.md`](docs/LIMBO.md) — requisitos para rodar no Limbo PC Emulator (Android).
+- [`docs/BUILD.md`](docs/BUILD.md) — construir, testar e entrar no sistema.
+- [`docs/releases/1.0.0.md`](docs/releases/1.0.0.md) — notas da versão 1.0.0 (Corvo).
 
 ---
 
