@@ -66,7 +66,9 @@ done
 have gh || die "gh ausente (https://cli.github.com)"
 have sha256sum || die "sha256sum ausente (coreutils)"
 
-OUT_DIR="$KOLIN_OUTPUT_DIR"
+# build.sh exports KOLIN_OUTPUT_DIR; when this script is run standalone it is
+# not set, and VERSION/common.sh do not define it either — so default it here.
+OUT_DIR="${KOLIN_OUTPUT_DIR:-$ROOT_DIR/output}"
 [ -d "$OUT_DIR" ] || die "diretório de artefatos ausente: $OUT_DIR (rode o build primeiro)"
 
 # Derive OWNER/REPO from the remote so the default cannot drift from the clone
@@ -145,11 +147,11 @@ fi
 # profiles. SHA256SUMS goes last so it is uploaded after what it describes.
 ASSETS=()
 for name in \
-    "kolinos-$KOLIN_VERSION-$KOLIN_CODENAME-arm64.iso" \
-    "kolinos-$KOLIN_VERSION-$KOLIN_CODENAME-arm64.img" \
-    "kolinos-$KOLIN_VERSION-$KOLIN_CODENAME-arm64.img.xz" \
-    "kolinos-$KOLIN_VERSION-$KOLIN_CODENAME-arm64.tar.xz" \
-    "kolinos-source-$KOLIN_VERSION-$KOLIN_CODENAME.zip" \
+    "kolinos-$KOLIN_VERSION-$KOLIN_CODENAME_LOWER-$KOLIN_ARCH.iso" \
+    "kolinos-$KOLIN_VERSION-$KOLIN_CODENAME_LOWER-$KOLIN_ARCH.img" \
+    "kolinos-$KOLIN_VERSION-$KOLIN_CODENAME_LOWER-$KOLIN_ARCH.img.xz" \
+    "kolinos-$KOLIN_VERSION-$KOLIN_CODENAME_LOWER-$KOLIN_ARCH.tar.xz" \
+    "kolinos-source-$KOLIN_VERSION-$KOLIN_CODENAME_LOWER.zip" \
     "METADATA.txt" \
     "SHA256SUMS"
 do

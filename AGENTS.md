@@ -81,6 +81,61 @@ devem ir para background com log em arquivo e ser acompanhados por `tail`.
 O registro no `binfmt_misc` é volátil: um resume do sandbox perde-o; reexecute
 o registro antes de qualquer build/chroot arm64.
 
+### Quando o registro NÃO é possível
+
+Em alguns sandboxes `/proc` é um `fuse` que recusa reconfiguração, e o
+`binfmt_misc` fica read-only de forma irrecuperável:
+
+```
+mount -o remount,rw /proc/sys/fs/binfmt_misc
+  → fsconfig() failed: fuse: No changes allowed in reconfigure
+echo … > /proc/sys/fs/binfmt_misc/register
+  → Read-only file system
+```
+
+Montá-lo num ponto novo (`mount -t binfmt_misc binfmt_misc /tmp/bfmt`) também
+deixa o `register` inutilizável (`printf: I/O error`). Nesse estado:
+
+- `chroot` arm64 falha com `Exec format error` (o kernel não tem para onde
+  despachar o ELF aarch64);
+- `proot -q qemu-aarch64-static` aborta com `terminated with signal 31`
+  (SIGSYS) — não é alternativa aqui;
+- **consequência prática: não dá para reconstruir os binários** (`.img`,
+  `.iso`, `.tar.xz`). O `output/` existente continua válido e verificável.
+
+O que ainda funciona sem `binfmt`: invocação direta do emulador, útil para
+inspecionar o rootfs —
+
+```sh
+qemu-aarch64-static -L rootfs rootfs/usr/bin/dpkg-query -W dpkg
+```
+
+Artefatos host-side que não precisam de execução arm64 (ISO carrier, ZIP de
+fonte, compressão `xz`) continuam reproduzíveis:
+
+```sh
+bash scripts/artifacts/make-source-zip.sh
+bash scripts/artifacts/make-iso.sh
+```
+
+## Push e release
+
+`scripts/artifacts/release.sh` publica os artefatos como release do GitHub.
+Ele **não** é acionado pelo `build.sh`; rode depois do build e do `git push`:
+
+```sh
+GH_TOKEN=<pat> bash scripts/artifacts/release.sh \
+  --tag v1.0.0 --allow-tag-mismatch --notes docs/releases/1.0.0.md
+```
+
+O script recusa publicar se `sha256sum -c SHA256SUMS` falhar. Exige
+`--allow-tag-mismatch` quando a tag não aponta para HEAD (o normal aqui: os
+nomes dos arquivos carregam a versão do `VERSION`, então bumpar a versão
+implicaria renomear tudo; publicar na tag existente mantém a coerência).
+
+Atenção ao codename: os arquivos usam o **minúsculo** (`corvo`), de
+`KOLIN_CODENAME_LOWER` — não `KOLIN_CODENAME` (`Corvo`).
+
 ## Imagens distribuíveis (FASE 8)
 
 - Gerar a imagem de disco: `sudo bash build.sh --with-image` (opt-in, como o
